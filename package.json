@@ -8,10 +8,18 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "axios": "^0.21.4",
     "core-js": "^3.6.5",
+    "debounce": "^1.2.1",
     "firebase": "^9.0.2",
+    "moment": "^2.29.1",
+    "store": "^2.0.12",
+    "vee-validate": "^3.4.13",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
+    "vue2-editor": "^2.10.3",
+    "vuefire": "^2.2.5",
+    "vuelidate": "^0.7.6",
     "vuetify": "^2.4.0"
   },
   "devDependencies": {
