@@ -87,10 +87,10 @@
           <v-list-item link>
             <v-list-item-content>
               <v-list-item-title class="text-h6">
-                {{ currentUser.username }}
+                {{ currentUserInfo.username }}
               </v-list-item-title>
               <v-list-item-subtitle class="text-subtitle">{{
-                currentUser.email
+                currentUserInfo.email
               }}</v-list-item-subtitle>
             </v-list-item-content>
 
@@ -105,7 +105,7 @@
               >
 
               <v-list-item-subtitle class="text-subtitle black--text">
-                {{ currentUser.goal }}
+                {{ currentUserInfo.goal }}
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
@@ -129,6 +129,8 @@
             </v-list-item-content>
           </v-list-item>
         </v-list>
+        {{this.currentUserInfo}}
+        <!-- {{this.currentUserAuth}} -->
         <!-- <div>{{currentUserAuth.uid}}</div> -->
 
         <!-- <template v-slot:append>
@@ -139,7 +141,7 @@
             
           </div>
         </template> -->
-        <!-- <div>{{ currentUser }}</div> -->
+        <!-- <div>{{ currentUserInfo }}</div> -->
       </v-navigation-drawer>
     </v-card>
     <v-card v-else>
@@ -172,7 +174,7 @@ import db from "@/fb";
 export default {
   data() {
     return {
-      currentUser: "",
+      currentUserInfo: "",
       currentUserAuth:"",
 
       drawer: false,
@@ -212,7 +214,7 @@ export default {
       let snapshot = await db.collection("users").get();
       snapshot.forEach((doc) => {
         if (doc.data().email == user.email) {
-          this.currentUser = doc.data();
+          this.currentUserInfo = doc.data();
         }
       });
     },

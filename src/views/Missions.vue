@@ -319,9 +319,10 @@
             </v-list-item>
           </template>
         </v-slide-y-transition>
-        <!-- <div>{{ firebase.auth().currentUser.uid }}</div> -->
-        <div>{{ currentUser }}</div>
+        <!-- <div>{{ firebase.auth().currentUserInfo.uid }}</div> -->
+        <div>{{ currentUserInfo }}</div>
         <div>{{ currentUserAuth.uid }}</div>
+        <div>{{ currentUserRef }}</div>
       </v-card>
     </div>
   </v-container>
@@ -389,7 +390,8 @@ export default {
   data() {
     return {
       //登录信息
-      currentUser: undefined,
+      currentUserInfo: undefined,
+      currentUserRef: undefined,
       currentUserAuth: undefined,
       loggedIn: undefined,
 
@@ -489,7 +491,6 @@ export default {
           // User is signed in.
           console.log("signed in");
           this.currentUserAuth = user;
-          console.log(this.currentUserAuth);
           this.getUsers(user);
           this.loggedIn = true;
         } else {
@@ -503,7 +504,7 @@ export default {
       let snapshot = await db.collection("users").get();
       snapshot.forEach((doc) => {
         if (doc.data().email == user.email) {
-          this.currentUser = doc.data();
+          this.currentUserInfo = doc.data();
         }
       });
     },
@@ -530,17 +531,72 @@ export default {
 
     //渲染任务列表
     async getMissions() {
-      let snapshot = await db.collection("missions").get();
+      //   let snapshot = await db.collection("missions").get();
+      //   let missions = [];
+      //   snapshot.forEach((doc) => {
+      //     let appData = doc.data();
+      //     appData.id = doc.id;
+      //     missions.push(appData);
+      //   });
+      //   this.missions = missions;
+      //   let missions = [];
+      //   db.collection("missions").onSnapshot((res) => {
+      //     const changes = res.docChanges();
+      //     //   let missions = [];
+      //     changes.forEach((change) => {
+      //       // console.log(change.doc.data().user.id);
+      //       // console.log(this.currentUserRef);
+      //       if (
+      //         change.type === "added" &&
+      //         change.doc.data().user.id == this.currentUserRef
+      //       ) {
+      //         // console.log(change.doc.data().user.id);
+      //         // console.log(this.currentUserRef)
+
+      //         // console.log(change.doc.data());
+
+      //         let appData = change.doc.data();
+      //         console.log(appData);
+      //         appData.id = change.id;
+      //         missions.push(appData);
+
+      //         //   this.missions.push({
+      //         //     ...change.doc.data(),
+      //         //     id: change.doc.id,
+      //         //   });
+      //       }
+      //     });
+      //     this.missions = missions;
+      //   });
       let missions = [];
-      snapshot.forEach((doc) => {
-        let appData = doc.data();
-        appData.id = doc.id;
-        missions.push(appData);
+      db.collection("missions").onSnapshot((res) => {
+        const changes = res.docChanges();
+        //   let missions = [];
+        changes.forEach((change) => {
+          // console.log(change.doc.data().user.id);
+          // console.log(this.currentUserRef);
+          if (
+            change.type === "added" &&
+            change.doc.data().user.id == this.currentUserRef
+          ) {
+            // console.log(change.doc.data().user.id);
+            // console.log(this.currentUserRef)
+
+            // console.log(change.doc.data());
+
+            missions.push({
+              ...change.doc.data(),
+              id: change.doc.id,
+            });
+          }
+        });
       });
       this.missions = missions;
+      console.log(missions);
     },
     //提交任务
     submitNewMission() {
+      //   console.log("ref is " + this.currentUserRef);
       this.updateTimestamps();
       //当detail为空时，显示“(空)”
       if (this.detail == "") {
@@ -556,12 +612,10 @@ export default {
           detail: this.detail,
           missionType: this.selectType,
           createdTimestamps: this.updateTimestamps(),
-          user: db.doc("users/" + this.currentUserAuth.uid),
-          //firebase.auth().currentUser.uid
+          user: db.doc("users/" + this.currentUserRef),
           finished: false,
         })
       );
-      console.log(db.doc("users/" + firebase.auth().currentUser.uid));
       this.clearAll();
     },
 
@@ -633,14 +687,37 @@ export default {
     },
   },
   created() {
-    //渲染任务列表
-    db.collection("missions").onSnapshot((res) => {
+    //获取currentUserRef
+    db.collection("users").onSnapshot((res) => {
       const changes = res.docChanges();
 
       changes.forEach((change) => {
-        if (change.type === "added"&&change.doc.data().user.id == this.currentUserAuth.uid) {
-            console.log(change.doc.data().user.id);
-            console.log(this.currentUserAuth.uid)
+        if (
+          change.type === "added" &&
+          this.currentUserAuth.email == change.doc.data().email
+        ) {
+          this.currentUserRef = change.doc.id;
+        }
+      });
+    });
+
+    // this.getMissions();
+
+    db.collection("missions").onSnapshot((res) => {
+      const changes = res.docChanges();
+      //   let missions = [];
+      changes.forEach((change) => {
+        // console.log(change.doc.data().user.id);
+        // console.log(this.currentUserRef);
+        if (
+          change.type === "added" &&
+          change.doc.data().user.id == this.currentUserRef
+        ) {
+          // console.log(change.doc.data().user.id);
+          // console.log(this.currentUserRef)
+
+          // console.log(change.doc.data());
+
           this.missions.push({
             ...change.doc.data(),
             id: change.doc.id,
