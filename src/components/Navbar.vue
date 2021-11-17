@@ -129,7 +129,7 @@
             </v-list-item-content>
           </v-list-item>
         </v-list>
-        {{this.currentUserInfo}}
+        {{ this.currentUserInfo }}
         <!-- {{this.currentUserAuth}} -->
         <!-- <div>{{currentUserAuth.uid}}</div> -->
 
@@ -175,13 +175,14 @@ export default {
   data() {
     return {
       currentUserInfo: "",
-      currentUserAuth:"",
+      currentUserAuth: "",
 
       drawer: false,
       sheet: false,
       selectedILink: 0,
       links: [
-        { icon: "mdi-view-dashboard", text: "Dashboard", route: "/" },
+        { icon: "mdi-view-dashboard", text: "Home", route: "/" },
+        { icon: "mdi-view-dashboard", text: "Dashboard", route: "/missions" },
         { icon: "mdi-folder", text: "My Projects", route: "/projects" },
         { icon: "mdi-account", text: "Team", route: "/team" },
       ],
@@ -200,7 +201,7 @@ export default {
           // User is signed in.
           console.log("signed in");
           this.currentUserAuth = user;
-          console.log(this.currentUserAuth)
+          console.log(this.currentUserAuth);
           this.getUsers(user);
           this.loggedIn = true;
         } else {
