@@ -146,7 +146,7 @@
     </v-card>
     <v-card v-else>
       <v-navigation-drawer app v-model="drawer" color="indigo100">
-        <v-list>
+        <v-list dense>
           <v-list-item>
             <v-list-item-content class="my-4">
               <v-list-item-title class="text-warp my-4">

@@ -150,11 +150,11 @@
                             </v-flex>
                           </v-list-item-content>
                           <v-list-item-content class="">
-                            <v-text
+                            <div
                               class="ma-2 d-flex justify-center font-weight-black indigo--text"
                             >
                               任务名字：
-                            </v-text>
+                            </div>
 
                             <v-text-field
                               outlined
@@ -164,11 +164,11 @@
                             ></v-text-field>
                           </v-list-item-content>
                           <v-list-item-content class="indigo--text">
-                            <v-text
+                            <div
                               class="ma-2 d-flex justify-center font-weight-black indigo--text"
                             >
                               任务细节：
-                            </v-text>
+                            </div>
                             <v-text-field
                               outlined
                               v-model="editingDetail"
@@ -196,9 +196,9 @@
                             <div>
                               {{ mission.user.id }}
                             </div>
-                            <v-text>
+                            <div>
                               {{ currentUserAuth.uid }}
-                            </v-text>
+                            </div>
                           </v-list-content>
                           <!-- {{this.currentUserAuth}} -->
                         </v-flex>
@@ -328,11 +328,11 @@
   </v-container>
   <v-container v-else style="max-width: 500px">
     <v-alert text color="indigo400">
-      <v-text class="text-h5 indigo--text">
+      <div class="text-h5 indigo--text">
         你还没登录！
-      </v-text>
+      </div>
       <v-spacer></v-spacer>
-      <v-text>AdventureManual是一款让你养成良好记录任务习惯的应用。</v-text>
+      <div>AdventureManual是一款让你养成良好记录任务习惯的应用。</div>
 
       <v-divider class="my-4 info" style="opacity: 0.22"></v-divider>
 
@@ -531,47 +531,9 @@ export default {
 
     //渲染任务列表
     async getMissions() {
-      //   let snapshot = await db.collection("missions").get();
-      //   let missions = [];
-      //   snapshot.forEach((doc) => {
-      //     let appData = doc.data();
-      //     appData.id = doc.id;
-      //     missions.push(appData);
-      //   });
-      //   this.missions = missions;
-      //   let missions = [];
-      //   db.collection("missions").onSnapshot((res) => {
-      //     const changes = res.docChanges();
-      //     //   let missions = [];
-      //     changes.forEach((change) => {
-      //       // console.log(change.doc.data().user.id);
-      //       // console.log(this.currentUserRef);
-      //       if (
-      //         change.type === "added" &&
-      //         change.doc.data().user.id == this.currentUserRef
-      //       ) {
-      //         // console.log(change.doc.data().user.id);
-      //         // console.log(this.currentUserRef)
-
-      //         // console.log(change.doc.data());
-
-      //         let appData = change.doc.data();
-      //         console.log(appData);
-      //         appData.id = change.id;
-      //         missions.push(appData);
-
-      //         //   this.missions.push({
-      //         //     ...change.doc.data(),
-      //         //     id: change.doc.id,
-      //         //   });
-      //       }
-      //     });
-      //     this.missions = missions;
-      //   });
       let missions = [];
       db.collection("missions").onSnapshot((res) => {
         const changes = res.docChanges();
-        //   let missions = [];
         changes.forEach((change) => {
           // console.log(change.doc.data().user.id);
           // console.log(this.currentUserRef);
@@ -581,8 +543,11 @@ export default {
           ) {
             // console.log(change.doc.data().user.id);
             // console.log(this.currentUserRef)
-
             // console.log(change.doc.data());
+
+            // let appData = change.doc.data();
+            // appData.id = change.id;
+            // missions.push(appData);
 
             missions.push({
               ...change.doc.data(),
@@ -701,30 +666,8 @@ export default {
       });
     });
 
-    // this.getMissions();
+    this.getMissions();
 
-    db.collection("missions").onSnapshot((res) => {
-      const changes = res.docChanges();
-      //   let missions = [];
-      changes.forEach((change) => {
-        // console.log(change.doc.data().user.id);
-        // console.log(this.currentUserRef);
-        if (
-          change.type === "added" &&
-          change.doc.data().user.id == this.currentUserRef
-        ) {
-          // console.log(change.doc.data().user.id);
-          // console.log(this.currentUserRef)
-
-          // console.log(change.doc.data());
-
-          this.missions.push({
-            ...change.doc.data(),
-            id: change.doc.id,
-          });
-        }
-      });
-    });
   },
 };
 </script>

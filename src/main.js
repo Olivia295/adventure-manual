@@ -27,6 +27,8 @@ Vue.prototype.$moment = moment
 
 let app;
 
+Vue.use(vuetify);
+
 firebase.auth().onAuthStateChanged(user => {
     console.log(user);
     if (!app) {

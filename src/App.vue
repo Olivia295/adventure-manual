@@ -3,10 +3,10 @@
   <v-app class="primary lighten-4">
       
     <Navbar />
-    <v-content class="indigo50">
+    <v-main class="indigo50">
         <!-- <top-header></top-header> -->
       <router-view></router-view>
-    </v-content>
+    </v-main>
       <!-- <div>
     Logged in
     <div v-if="loggedIn">Yes</div>
