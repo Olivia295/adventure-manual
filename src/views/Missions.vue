@@ -36,20 +36,20 @@
             </v-list-item-content>
           </template>
           <form class="ma-4">
-            <v-text-field
+            <v-textarea
               outlined
               v-model="detail"
               label="任务细节"
               @input="$v.detail.$touch()"
               @blur="$v.detail.$touch()"
-            ></v-text-field>
+            ></v-textarea>
 
             <v-select
               outlined
-              v-model="selectType"
-              :items="type"
+              v-model="selectPlot"
+              :items="Object.values(plotIdRefTitle)"
               :error-messages="selectErrors"
-              label="任务类型"
+              label="对应剧情"
               required
               @change="$v.select.$touch()"
               @blur="$v.select.$touch()"
@@ -108,7 +108,8 @@
         <v-slide-y-transition class="py-0" group tag="v-list">
           <template v-for="(mission, i) in missions">
             <v-divider v-if="mission.finished == false" :key="i"></v-divider>
-            <v-list v-if="mission.finished == false" :key="mission.id">
+            <v-list v-if="mission.finished == false" :key="mission.id" >
+                
               <v-list-item :key="mission.id" v-if="mission.finished == false">
                 <v-list-item-action>
                   <v-checkbox
@@ -169,26 +170,26 @@
                             >
                               任务细节：
                             </div>
-                            <v-text-field
+                            <v-textarea
                               outlined
                               v-model="editingDetail"
                               :label="`${mission.detail}`"
                               :disabled="!EDITING"
-                            ></v-text-field>
+                            ></v-textarea>
                           </v-list-item-content>
 
                           <v-list-item-content class="indigo--text">
                             <div
                               class="ma-2 d-flex justify-center font-weight-black indigo--text"
                             >
-                              任务类型：
+                              对应故事：
                             </div>
 
                             <v-select
                               outlined
-                              v-model="editingMissionType"
-                              :items="type"
-                              :label="`${mission.missionType}`"
+                              v-model="editingPlot"
+                              :items="plotsTitle"
+                              :label="plotIdRefTitle[mission.plot.id]"
                               :disabled="!EDITING"
                             ></v-select>
                           </v-list-item-content>
@@ -199,6 +200,7 @@
                             <div>
                               {{ currentUserAuth.uid }}
                             </div>
+                            <div>{{ mission.plot.id }}</div>
                           </v-list-content>
                           <!-- {{this.currentUserAuth}} -->
                         </v-flex>
@@ -304,7 +306,7 @@
                       "
                       class="ml-4"
                     >
-                      {{ mission.user }}
+                      {{ mission.title }}
                     </div>
                   </template>
                 </v-checkbox>
@@ -320,9 +322,9 @@
           </template>
         </v-slide-y-transition>
         <!-- <div>{{ firebase.auth().currentUserInfo.uid }}</div> -->
-        <div>{{ currentUserInfo }}</div>
+        <!-- <div>{{ currentUserInfo }}</div>
         <div>{{ currentUserAuth.uid }}</div>
-        <div>{{ currentUserRef }}</div>
+        <div>{{ currentUserRef }}</div> -->
       </v-card>
     </div>
   </v-container>
@@ -389,6 +391,9 @@ export default {
 
   data() {
     return {
+      plotIdRefTitle: {},
+      // VGdRrXe3WB86oOO4w7kl: "make me better",
+
       //登录信息
       currentUserInfo: undefined,
       currentUserRef: undefined,
@@ -410,15 +415,8 @@ export default {
       title: "",
       detail: "",
 
-      selectType: "(未选定)",
-      type: [
-        "(未选定)",
-        "主线任务",
-        "支线任务",
-        "随机任务",
-        "忠诚任务",
-        "隐藏任务",
-      ],
+      selectPlot: "(未指定)",
+      plotsTitle: [],
 
       createdDate: new Date(),
 
@@ -426,7 +424,7 @@ export default {
       EDITING: false,
       editingTitle: "",
       editingDetail: "",
-      editingMissionType: "",
+      editingPlot: "",
     };
   },
 
@@ -530,25 +528,15 @@ export default {
     },
 
     //渲染任务列表
-    async getMissions() {
+    getMissions() {
       let missions = [];
       db.collection("missions").onSnapshot((res) => {
         const changes = res.docChanges();
         changes.forEach((change) => {
-          // console.log(change.doc.data().user.id);
-          // console.log(this.currentUserRef);
           if (
             change.type === "added" &&
             change.doc.data().user.id == this.currentUserRef
           ) {
-            // console.log(change.doc.data().user.id);
-            // console.log(this.currentUserRef)
-            // console.log(change.doc.data());
-
-            // let appData = change.doc.data();
-            // appData.id = change.id;
-            // missions.push(appData);
-
             missions.push({
               ...change.doc.data(),
               id: change.doc.id,
@@ -559,6 +547,38 @@ export default {
       this.missions = missions;
       console.log(missions);
     },
+    getPlots() {
+      let plots = [];
+      let plotsTitle = [];
+      db.collection("plots").onSnapshot((res) => {
+        const changes = res.docChanges();
+        changes.forEach((change) => {
+          if (
+            change.type === "added" &&
+            change.doc.data().user.id == this.currentUserRef
+          ) {
+            this.currentPlotRef = change.doc.id;
+            console.log(change.doc.id);
+            console.log(change.doc.data().title);
+            this.plotIdRefTitle[change.doc.id] = change.doc.data().title;
+            console.log(this.plotIdRefTitle);
+            plots.push({
+              ...change.doc.data(),
+              id: change.doc.id,
+            });
+          }
+        });
+
+        for (var i = 0; i < plots.length; i++) {
+          console.log(plots[i].title);
+          plotsTitle.push(plots[i].title);
+          console.log(plotsTitle);
+        }
+        this.plotsTitle = plotsTitle;
+        console.log(this.plotsTitle);
+      });
+    },
+
     //提交任务
     submitNewMission() {
       //   console.log("ref is " + this.currentUserRef);
@@ -571,13 +591,26 @@ export default {
       if (this.selectType == null) {
         this.selectType = "(未选定)";
       }
+      //   for (var i = 0; i < this.plotIdRefTitle.length; i++) {
+      //     console.log(this.plotIdRefTitle)
+      //   }
+      var plotId = Object.keys(this.plotIdRefTitle).sort(); // 字典元素按key值排序
+      var targetPlotId = undefined;
+      for (var key in plotId) {
+        if (this.plotIdRefTitle[plotId[key]] == this.selectPlot) {
+          targetPlotId = plotId[key];
+        }
+        console.log(targetPlotId);
+      }
+
       this.$v.$touch(
         db.collection("missions").add({
           title: this.title,
           detail: this.detail,
-          missionType: this.selectType,
+        //   missionType: this.selectType,
           createdTimestamps: this.updateTimestamps(),
           user: db.doc("users/" + this.currentUserRef),
+          plot: db.doc("plots/" + targetPlotId),
           finished: false,
         })
       );
@@ -612,7 +645,7 @@ export default {
     editMission(mission) {
       this.editingTitle = mission.title;
       this.editingDetail = mission.detail;
-      this.editingMissionType = mission.missionType;
+    //   this.editingMissionType = mission.missionType;
 
       this.EDITING = !this.EDITING;
       this.snackbarForEdit = true;
@@ -625,7 +658,7 @@ export default {
         .update({
           title: this.editingTitle,
           detail: this.editingDetail,
-          missionType: this.editingMissionType,
+        //   missionType: this.editingMissionType,
         })
         .catch((error) => {
           console.error(error);
@@ -633,7 +666,7 @@ export default {
       this.getMissions();
       this.editingTitle = "";
       this.editingDetail = "";
-      this.editingMissionType = "";
+    //   this.editingMissionType = "";
 
       this.EDITING = !this.EDITING;
       this.snackbarForSave = true;
@@ -668,6 +701,7 @@ export default {
 
     this.getMissions();
 
+    this.getPlots();
   },
 };
 </script>
