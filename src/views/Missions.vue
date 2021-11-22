@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="loggedIn" style="max-width: 500px">
+  <v-container v-if="loggedIn" style="max-width: 450px">
     <v-card class="py-2 px-1 mx-auto rounded-b-xl" color="indigo50">
       <v-text-field
         class="mx-1 black--text"
@@ -465,7 +465,6 @@ export default {
           // User is signed in.
           console.log("signed in");
           this.currentUserAuth = user;
-          console.log(this.currentUserAuth);
           this.getUsers(user);
           this.loggedIn = true;
         } else {
@@ -545,7 +544,7 @@ export default {
         });
       });
       this.missions = missions;
-      console.log(missions);
+
     },
     getPlots() {
       let plots = [];
@@ -558,10 +557,7 @@ export default {
             change.doc.data().user.id == this.currentUserRef
           ) {
             this.currentPlotRef = change.doc.id;
-            console.log(change.doc.id);
-            console.log(change.doc.data().title);
             this.plotIdRefTitle[change.doc.id] = change.doc.data().title;
-            console.log(this.plotIdRefTitle);
             plots.push({
               ...change.doc.data(),
               id: change.doc.id,
@@ -570,18 +566,14 @@ export default {
         });
 
         for (var i = 0; i < plots.length; i++) {
-          console.log(plots[i].title);
           plotsTitle.push(plots[i].title);
-          console.log(plotsTitle);
         }
         this.plotsTitle = plotsTitle;
-        console.log(this.plotsTitle);
       });
     },
 
     //提交任务
     submitNewMission() {
-      //   console.log("ref is " + this.currentUserRef);
       this.updateTimestamps();
       //当detail为空时，显示“(空)”
       if (this.detail == "") {
@@ -591,9 +583,7 @@ export default {
       if (this.selectType == null) {
         this.selectType = "(未选定)";
       }
-      //   for (var i = 0; i < this.plotIdRefTitle.length; i++) {
-      //     console.log(this.plotIdRefTitle)
-      //   }
+
       var plotId = Object.keys(this.plotIdRefTitle).sort(); // 字典元素按key值排序
       var targetPlotId = undefined;
       for (var key in plotId) {

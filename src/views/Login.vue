@@ -72,7 +72,6 @@ export default {
     await firebase
           .auth()
           .signInWithEmailAndPassword(this.email, this.password);
-        // console.log(val);
         this.$router.replace({ name: "Missions" });
       } catch (err) {
         console.log(err);

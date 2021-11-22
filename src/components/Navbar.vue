@@ -201,7 +201,7 @@ export default {
           // User is signed in.
           console.log("signed in");
           this.currentUserAuth = user;
-          console.log(this.currentUserAuth);
+        //   console.log(this.currentUserAuth);
           this.getUsers(user);
           this.loggedIn = true;
         } else {

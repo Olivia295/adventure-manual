@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="loggedIn" style="max-width:500px">
+  <v-container v-if="loggedIn" style="max-width:450px">
     <v-container>
       <v-row justify="center">
         <v-dialog v-model="dialogForAddingNewPlot" persistent max-width="600px">
@@ -143,6 +143,35 @@
             <div class="text-h4 font-weight-light mb-2">
               {{ plot.title }}
             </div>
+            <v-container>
+              <v-divider class="my-2"></v-divider>
+              <v-row justify="center">
+                <v-col md="4">
+                  <v-card
+                    class="d-flex justify-center mb-4"
+                    :color="
+                      $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4'
+                    "
+                    flat
+                    tile
+                  >
+                    <div class="class-h5 font-bold">剧情内容：</div>
+                  </v-card>
+                  <v-card
+                    class="d-flex justify-center mb-4"
+                    :color="
+                      $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4'
+                    "
+                    flat
+                    tile
+                  >
+                    <div class="text-h5 font-weight-light">
+                      {{ plot.content }}
+                    </div>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-container>
             <div>
               <v-data-table
                 :headers="headers"
@@ -152,12 +181,41 @@
                 <template v-slot:item.finished="{ item }">
                   <v-simple-checkbox
                     v-model="item.finished"
-                    @click="test()"
                     disabled
                   ></v-simple-checkbox>
                 </template>
               </v-data-table>
             </div>
+
+            <v-container>
+              <v-divider class="my-4"></v-divider>
+              <v-row justify="center">
+                <v-col md="4">
+                  <v-card
+                    class="d-flex justify-center mb-4"
+                    :color="
+                      $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4'
+                    "
+                    flat
+                    tile
+                  >
+                    <div class="class-h5 font-bold">奖励：</div>
+                  </v-card>
+                  <v-card
+                    class="d-flex justify-center mb-4"
+                    :color="
+                      $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4'
+                    "
+                    flat
+                    tile
+                  >
+                    <div class="text-h5 font-weight-light">
+                      {{ plot.reward }}
+                    </div>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-container>
           </v-card-text>
           <v-divider class="mb-4"></v-divider>
         </v-card>
@@ -270,9 +328,7 @@ export default {
       s = s < 10 ? "0" + s : s;
       return y + "年 " + MM + "月" + d + "日 " + h + "时" + m + "分" + s + "秒";
     },
-    test() {
-      console.log("change!");
-    },
+
     setupFirebase() {
       firebase.auth().onAuthStateChanged((user) => {
         this.loggedIn = !!user;
@@ -340,15 +396,13 @@ export default {
       return missions;
     },
     closeMissionDialog(plotId) {
-      console.log(typeof(plotId));
       this.dialogForAddingNewMission[plotId] = false;
-      console.log(this.dialogForAddingNewMission);
     },
     submitNewMission(plot) {
       this.closeMissionDialog(plot.id);
-    //   console.log(this.newMissionTitle + " ! " + this.newMissionDetail);
-    //   console.log(plot.id);
-    //   console.log(this.currentUserRef);
+      //   console.log(this.newMissionTitle + " ! " + this.newMissionDetail);
+      //   console.log(plot.id);
+      //   console.log(this.currentUserRef);
       db.collection("missions").add({
         title: this.newMissionTitle,
         detail: this.newMissionDetail,
@@ -363,10 +417,6 @@ export default {
     },
     submitNewPlot() {
       this.closePlotDialog();
-      console.log(this.newPlotTitle + " ! " + this.newPlotContent);
-      console.log(this.currentUserRef);
-      console.log(this.newPlotReward);
-      console.log(this.selectPlotType);
       db.collection("plots").add({
         title: this.newPlotTitle,
         content: this.newPlotContent,
