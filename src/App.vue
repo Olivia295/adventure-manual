@@ -4,15 +4,8 @@
       
     <Navbar />
     <v-main class="indigo50">
-        <!-- <top-header></top-header> -->
       <router-view></router-view>
     </v-main>
-      <!-- <div>
-    Logged in
-    <div v-if="loggedIn">Yes</div>
-    <div v-else>No</div>
-    <v-btn @click="signOut">Sign out</v-btn>
-  </div> -->
   </v-app>
 </template>
 

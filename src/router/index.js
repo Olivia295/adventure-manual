@@ -6,7 +6,6 @@ import Team from '../views/Team.vue'
 
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
-// import Secret from '@/views/Secret.vue'
 
 import firebase from "firebase/compat/app";
 import "firebase/auth"
@@ -16,12 +15,18 @@ Vue.use(VueRouter)
 const routes = [{
         path: '/',
         name: 'Home',
-        component: Home
+        component: Home,
+        meta: {
+            requiresUnauth: true
+        }
     },
     {
         path: '/missions',
         name: 'Missions',
-        component: Missions
+        component: Missions,
+        meta: {
+            requiresAuth: true
+        }
     },
     {
         path: '/team',

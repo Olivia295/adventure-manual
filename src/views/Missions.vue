@@ -8,8 +8,6 @@
         label="输入你的任务吧~"
         :error-messages="titleErrors"
         required
-        @input="$v.title.$touch()"
-        @blur="$v.title.$touch()"
         solo
         @keydown.enter="submitNewMission"
       >
@@ -36,13 +34,7 @@
             </v-list-item-content>
           </template>
           <form class="ma-4">
-            <v-textarea
-              outlined
-              v-model="detail"
-              label="任务细节"
-              @input="$v.detail.$touch()"
-              @blur="$v.detail.$touch()"
-            ></v-textarea>
+            <v-textarea outlined v-model="detail" label="任务细节"></v-textarea>
 
             <v-select
               outlined
@@ -51,8 +43,6 @@
               :error-messages="selectErrors"
               label="对应剧情"
               required
-              @change="$v.select.$touch()"
-              @blur="$v.select.$touch()"
             ></v-select>
 
             <v-layout align-center justify-center>
@@ -104,12 +94,12 @@
         ></v-progress-circular>
       </v-row>
 
+      <v-divider class="mb-4"></v-divider>
+
       <v-card v-if="missions.length > 0">
         <v-slide-y-transition class="py-0" group tag="v-list">
-          <template v-for="(mission, i) in missions">
-            <v-divider v-if="mission.finished == false" :key="i"></v-divider>
-            <v-list v-if="mission.finished == false" :key="mission.id" >
-                
+          <template v-for="mission in missions">
+            <v-list v-if="mission.finished == false" :key="mission.id">
               <v-list-item :key="mission.id" v-if="mission.finished == false">
                 <v-list-item-action>
                   <v-checkbox
@@ -254,6 +244,41 @@
       </v-card>
 
       <v-divider class="mb-4"></v-divider>
+
+      <v-card v-if="missions.length > 0">
+        <v-slide-y-transition class="py-0" group tag="v-list">
+          <template v-for="(mission, i) in missions">
+            <v-divider v-if="mission.finished == false" :key="i"></v-divider>
+            <v-list-item :key="mission.id" v-if="mission.finished == false">
+              <v-list-item-action>
+                <v-checkbox
+                  v-model="mission.finished"
+                  @click="changeMissionFinishedStatus(mission)"
+                >
+                  <template v-slot:label>
+                    <div :class="'primary--text'" class="ml-4">
+                      {{ mission.title }}
+                    </div>
+                  </template>
+                </v-checkbox>
+              </v-list-item-action>
+
+              <v-spacer></v-spacer>
+              <v-scroll-x-transition> </v-scroll-x-transition>
+              <v-icon class="mx-1" @click="deleteMission(mission)"
+                >mdi-close</v-icon
+              >
+
+              <v-scroll-x-transition> </v-scroll-x-transition>
+              <v-icon class="mx-1" @click="deleteMission(mission)"
+                >mdi-close</v-icon
+              >
+            </v-list-item>
+          </template>
+        </v-slide-y-transition>
+      </v-card>
+
+       <v-divider class="mb-4"></v-divider>
 
       <v-card v-if="missions.length > 0">
         <v-slide-y-transition class="py-0" group tag="v-list">
@@ -544,7 +569,6 @@ export default {
         });
       });
       this.missions = missions;
-
     },
     getPlots() {
       let plots = [];
@@ -593,17 +617,14 @@ export default {
         console.log(targetPlotId);
       }
 
-      this.$v.$touch(
-        db.collection("missions").add({
-          title: this.title,
-          detail: this.detail,
-        //   missionType: this.selectType,
-          createdTimestamps: this.updateTimestamps(),
-          user: db.doc("users/" + this.currentUserRef),
-          plot: db.doc("plots/" + targetPlotId),
-          finished: false,
-        })
-      );
+      db.collection("missions").add({
+        title: this.title,
+        detail: this.detail,
+        createdTimestamps: this.updateTimestamps(),
+        user: db.doc("users/" + this.currentUserRef),
+        plot: db.doc("plots/" + targetPlotId),
+        finished: false,
+      });
       this.clearAll();
     },
 
@@ -635,7 +656,7 @@ export default {
     editMission(mission) {
       this.editingTitle = mission.title;
       this.editingDetail = mission.detail;
-    //   this.editingMissionType = mission.missionType;
+      //   this.editingMissionType = mission.missionType;
 
       this.EDITING = !this.EDITING;
       this.snackbarForEdit = true;
@@ -648,7 +669,6 @@ export default {
         .update({
           title: this.editingTitle,
           detail: this.editingDetail,
-        //   missionType: this.editingMissionType,
         })
         .catch((error) => {
           console.error(error);
@@ -656,7 +676,6 @@ export default {
       this.getMissions();
       this.editingTitle = "";
       this.editingDetail = "";
-    //   this.editingMissionType = "";
 
       this.EDITING = !this.EDITING;
       this.snackbarForSave = true;

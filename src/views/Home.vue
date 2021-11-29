@@ -8,44 +8,54 @@
               创建新剧情
             </v-btn>
           </template>
+
           <v-card>
             <v-card-title>
-              <span class="text-h5">创建新剧情:</span>
+              <span class="text-h5">创建新剧情</span>
             </v-card-title>
+
             <v-card-text>
               <v-container>
                 <v-row>
                   <v-col cols="12">
                     <v-text-field
                       v-model="newPlotTitle"
-                      label="Title"
+                      label="剧情名称"
                     ></v-text-field>
                   </v-col>
-
                   <v-col cols="12">
                     <v-textarea
-                      label="Content"
                       v-model="newPlotContent"
+                      label="剧情内容"
                     ></v-textarea>
                   </v-col>
                   <v-col cols="12">
                     <v-select
                       v-model="selectPlotType"
                       :items="plotType"
-                      label="PlotType"
+                      label="选择剧情类型"
                       required
                     ></v-select>
                   </v-col>
                   <v-col cols="12">
                     <v-text-field
-                      label="Reward"
                       v-model="newPlotReward"
+                      label="剧情完成后的奖励"
                       required
                     ></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
+              <div color="black mx-4">选择剧情颜色</div>
+              <v-container>
+                <v-row>
+                  <v-col class="d-flex justify-center">
+                    <v-color-picker v-model="color"></v-color-picker>
+                  </v-col>
+                </v-row>
+              </v-container>
             </v-card-text>
+
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" text @click="closePlotDialog">
@@ -59,13 +69,14 @@
         </v-dialog>
       </v-row>
     </v-container>
+
     <div v-if="plots.length > 0" class="my-4">
-      <template v-for="plot in plots">
+      <template v-for="(plot, i) in plots">
         <v-card
           :key="plot.id"
           class="mx-auto"
           color="grey lighten-4"
-          max-width="600"
+          max-width="600px"
         >
           <v-card-text class="pt-6" style="position: relative;">
             <v-dialog
@@ -144,9 +155,9 @@
               {{ plot.title }}
             </div>
             <v-container>
-              <v-divider class="my-2"></v-divider>
+              <v-divider class="my-4"></v-divider>
               <v-row justify="center">
-                <v-col md="4">
+                <v-col md="12">
                   <v-card
                     class="d-flex justify-center mb-4"
                     :color="
@@ -156,7 +167,8 @@
                     tile
                   >
                     <div class="class-h5 font-bold">剧情内容：</div>
-                  </v-card>
+                  </v-card> </v-col
+                ><v-col>
                   <v-card
                     class="d-flex justify-center mb-4"
                     :color="
@@ -172,6 +184,7 @@
                 </v-col>
               </v-row>
             </v-container>
+
             <div>
               <v-data-table
                 :headers="headers"
@@ -181,6 +194,7 @@
                 <template v-slot:item.finished="{ item }">
                   <v-simple-checkbox
                     v-model="item.finished"
+                    @click="changeMissionFinishedStatus(item)"
                     disabled
                   ></v-simple-checkbox>
                 </template>
@@ -190,7 +204,7 @@
             <v-container>
               <v-divider class="my-4"></v-divider>
               <v-row justify="center">
-                <v-col md="4">
+                <v-col md="12">
                   <v-card
                     class="d-flex justify-center mb-4"
                     :color="
@@ -201,6 +215,9 @@
                   >
                     <div class="class-h5 font-bold">奖励：</div>
                   </v-card>
+                </v-col>
+
+                <v-col>
                   <v-card
                     class="d-flex justify-center mb-4"
                     :color="
@@ -217,8 +234,12 @@
               </v-row>
             </v-container>
           </v-card-text>
-          <v-divider class="mb-4"></v-divider>
+          <v-card-actions>
+              <v-spacer></v-spacer>
+            <v-btn block :color="plot.color">删除该剧情</v-btn></v-card-actions
+          >
         </v-card>
+        <v-divider :key="i" class="my-2"></v-divider>
       </template>
     </div>
   </v-container>
@@ -269,6 +290,14 @@ import db from "@/fb";
 export default {
   data() {
     return {
+      //   types: ["hex", "hexa", "rgba", "hsla", "hsva"],
+      type: "hexa",
+      //   hex: "#FF00FF",
+      hexa: "#FF00FFFF",
+      //   rgba: { r: 255, g: 0, b: 255, a: 1 },
+      //   hsla: { h: 300, s: 1, l: 0.5, a: 1 },
+      //   hsva: { h: 300, s: 1, v: 1, a: 1 },
+
       dialogForAddingNewMission: {},
       dialogForAddingNewPlot: false,
       headers: [
@@ -303,11 +332,42 @@ export default {
       plots: [],
     };
   },
-  computed: {},
+  computed: {
+    color: {
+      get() {
+        return this[this.type];
+      },
+      set(v) {
+        this[this.type] = v;
+      },
+    },
+    showColor() {
+      if (typeof this.color === "string") return this.color;
+
+      return JSON.stringify(
+        Object.keys(this.color).reduce((color, key) => {
+          color[key] = Number(this.color[key].toFixed(2));
+          return color;
+        }, {}),
+        null,
+        2
+      );
+    },
+  },
   mounted() {
     this.setupFirebase();
   },
+
   methods: {
+    changeMissionFinishedStatus(mission) {
+      db.collection("missions")
+        .doc(mission.id)
+        .update({ finished: !mission.finished })
+        .catch((error) => {
+          console.error(error);
+        });
+      this.getPlots();
+    },
     //获取当前时间戳
     updateTimestamps() {
       return (this.createdDate = new Date());
@@ -375,17 +435,15 @@ export default {
       });
       this.plots = plots;
     },
-    getMissions(_currentPlotRef) {
+    getMissions(currentPlotRef) {
       let missions = [];
       db.collection("missions").onSnapshot((res) => {
         const changes = res.docChanges();
         changes.forEach((change) => {
           if (
             change.type === "added" &&
-            change.doc.data().plot.id == _currentPlotRef
+            change.doc.data().plot.id == currentPlotRef
           ) {
-            // console.log("change " + change.doc.data().plot.id);
-            // console.log("ref " + _currentPlotRef);
             missions.push({
               ...change.doc.data(),
               id: change.doc.id,
@@ -397,12 +455,10 @@ export default {
     },
     closeMissionDialog(plotId) {
       this.dialogForAddingNewMission[plotId] = false;
+      this.newMissionTitle = undefined;
+      this.newMissionDetail = undefined;
     },
     submitNewMission(plot) {
-      this.closeMissionDialog(plot.id);
-      //   console.log(this.newMissionTitle + " ! " + this.newMissionDetail);
-      //   console.log(plot.id);
-      //   console.log(this.currentUserRef);
       db.collection("missions").add({
         title: this.newMissionTitle,
         detail: this.newMissionDetail,
@@ -411,12 +467,16 @@ export default {
         plot: db.doc("plots/" + plot.id),
         finished: false,
       });
+      this.closeMissionDialog(plot.id);
     },
+
     closePlotDialog() {
       this.dialogForAddingNewPlot = false;
+      this.newPlotTitle = undefined;
+      this.newPlotContent = undefined;
+      this.newPlotReward = undefined;
     },
     submitNewPlot() {
-      this.closePlotDialog();
       db.collection("plots").add({
         title: this.newPlotTitle,
         content: this.newPlotContent,
@@ -424,8 +484,9 @@ export default {
         plotType: this.selectPlotType,
         createdTimestamps: this.updateTimestamps(),
         user: db.doc("users/" + this.currentUserRef),
-        color: "#ff00ff",
+        color: this.showColor,
       });
+      this.closePlotDialog();
     },
   },
   created() {

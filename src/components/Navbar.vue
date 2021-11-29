@@ -67,7 +67,7 @@
     </v-app-bar>
     <v-card v-if="loggedIn" class="mx-auto" width="256" tile>
       <v-navigation-drawer app v-model="drawer" color="indigo100">
-        <v-list rounded>
+        <v-container class="mt-2" rounded>
           <v-list-item>
             <v-badge avatar bordered overlap>
               <template v-slot:badge>
@@ -109,7 +109,7 @@
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
-        </v-list>
+        </v-container>
         <v-divider></v-divider>
         <v-list nav dense rounded>
           <v-list-item-group color="primary">
@@ -129,19 +129,7 @@
             </v-list-item-content>
           </v-list-item>
         </v-list>
-        {{ this.currentUserInfo }}
-        <!-- {{this.currentUserAuth}} -->
-        <!-- <div>{{currentUserAuth.uid}}</div> -->
 
-        <!-- <template v-slot:append>
-          <div>
-            Logged in
-            <div v-if="loggedIn">Yes</div>
-            <div v-else>No</div>
-            
-          </div>
-        </template> -->
-        <!-- <div>{{ currentUserInfo }}</div> -->
       </v-navigation-drawer>
     </v-card>
     <v-card v-else>
