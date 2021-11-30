@@ -290,13 +290,8 @@ import db from "@/fb";
 export default {
   data() {
     return {
-      //   types: ["hex", "hexa", "rgba", "hsla", "hsva"],
       type: "hexa",
-      //   hex: "#FF00FF",
       hexa: "#FF00FFFF",
-      //   rgba: { r: 255, g: 0, b: 255, a: 1 },
-      //   hsla: { h: 300, s: 1, l: 0.5, a: 1 },
-      //   hsva: { h: 300, s: 1, v: 1, a: 1 },
 
       dialogForAddingNewMission: {},
       dialogForAddingNewPlot: false,

@@ -90,226 +90,161 @@
 
         <v-progress-circular
           :value="progress"
-          class="mr-2"
+          class="mx-2"
         ></v-progress-circular>
       </v-row>
 
       <v-divider class="mb-4"></v-divider>
 
-      <v-card v-if="missions.length > 0">
-        <v-slide-y-transition class="py-0" group tag="v-list">
-          <template v-for="mission in missions">
-            <v-list v-if="mission.finished == false" :key="mission.id">
-              <v-list-item :key="mission.id" v-if="mission.finished == false">
+      <v-expansion-panels>
+        <template v-for="(mission, i) in missions">
+          <v-expansion-panel v-if="mission.finished == false" :key="i">
+            <v-row class="text--red">
+              <v-col cols="2">
+                <v-checkbox
+                  class="mx-4"
+                  v-model="mission.finished"
+                  @click="changeMissionFinishedStatus(mission)"
+                >
+                </v-checkbox>
+              </v-col>
+              <v-col cols="8">
+                <v-expansion-panel-header
+                  ><div
+                    :class="
+                      (mission.finished && 'grey--text') || 'primary--text'
+                    "
+                    class="my-2"
+                    v-text="mission.title"
+                  ></div
+                ></v-expansion-panel-header>
+              </v-col>
+              <v-col cols="2">
                 <v-list-item-action>
-                  <v-checkbox
-                    v-model="mission.finished"
-                    @click="changeMissionFinishedStatus(mission)"
+                  <v-icon class="my-2" @click="deleteMission(mission)"
+                    >mdi-close</v-icon
                   >
-                  </v-checkbox>
                 </v-list-item-action>
-
-                <v-list-group :value="false" no-action>
-                  <template v-slot:activator>
-                    <v-list-item-content>
-                      <v-list-item-title>{{ mission.title }}</v-list-item-title>
-                    </v-list-item-content>
-                  </template>
-                  <v-list class="d-flex justify-center">
-                    <v-form>
-                      <v-layout wrap align-center>
-                        <v-flex>
-                          <v-list-item-content class="ma-4">
-                            <v-flex align-center justify-center column>
-                              <v-layout row align-center justify-center>
-                                <div
-                                  class="ma-2 indigo--text font-weight-black"
-                                >
-                                  任务创建时间：
-                                </div>
-                              </v-layout>
-                              <v-flex row align-center>
-                                <v-card-text
-                                  class="ma-2"
-                                  v-model="mission.createdTimestamps"
-                                >
-                                  {{
-                                    timestampToTime(mission.createdTimestamps)
-                                  }}
-                                </v-card-text>
-                              </v-flex>
-                            </v-flex>
-                          </v-list-item-content>
-                          <v-list-item-content class="">
-                            <div
-                              class="ma-2 d-flex justify-center font-weight-black indigo--text"
+              </v-col>
+            </v-row>
+            <v-expansion-panel-content>
+              <v-list class="d-flex justify-center">
+                <v-form>
+                  <v-layout wrap align-center>
+                    <v-flex>
+                      <v-list-item-content class="ma-4">
+                        <v-flex align-center justify-center column>
+                          <v-layout row align-center justify-center>
+                            <div class="ma-2 indigo--text font-weight-black">
+                              任务创建时间：
+                            </div>
+                          </v-layout>
+                          <v-flex row align-center>
+                            <v-card-text
+                              class="ma-2"
+                              v-model="mission.createdTimestamps"
                             >
-                              任务名字：
-                            </div>
-
-                            <v-text-field
-                              outlined
-                              v-model="editingTitle"
-                              :label="`${mission.title}`"
-                              :disabled="!EDITING"
-                            ></v-text-field>
-                          </v-list-item-content>
-                          <v-list-item-content class="indigo--text">
-                            <div
-                              class="ma-2 d-flex justify-center font-weight-black indigo--text"
-                            >
-                              任务细节：
-                            </div>
-                            <v-textarea
-                              outlined
-                              v-model="editingDetail"
-                              :label="`${mission.detail}`"
-                              :disabled="!EDITING"
-                            ></v-textarea>
-                          </v-list-item-content>
-
-                          <v-list-item-content class="indigo--text">
-                            <div
-                              class="ma-2 d-flex justify-center font-weight-black indigo--text"
-                            >
-                              对应故事：
-                            </div>
-
-                            <v-select
-                              outlined
-                              v-model="editingPlot"
-                              :items="plotsTitle"
-                              :label="plotIdRefTitle[mission.plot.id]"
-                              :disabled="!EDITING"
-                            ></v-select>
-                          </v-list-item-content>
-                          <v-list-content>
-                            <div>
-                              {{ mission.user.id }}
-                            </div>
-                            <div>
-                              {{ currentUserAuth.uid }}
-                            </div>
-                            <div>{{ mission.plot.id }}</div>
-                          </v-list-content>
-                          <!-- {{this.currentUserAuth}} -->
+                              {{ timestampToTime(mission.createdTimestamps) }}
+                            </v-card-text>
+                          </v-flex>
                         </v-flex>
-                      </v-layout>
+                      </v-list-item-content>
+                      <v-list-item-content class="">
+                        <div
+                          class="ma-2 d-flex justify-center font-weight-black indigo--text"
+                        >
+                          任务名字：
+                        </div>
 
-                      <div v-if="EDITING">
-                        <v-btn block @click="saveMission(mission)">Save</v-btn>
-                        <v-snackbar v-model="snackbarForEdit">
-                          编辑模式已启动！
-                          <template v-slot:action="{ attrs }">
-                            <v-btn
-                              color="pink"
-                              text
-                              v-bind="attrs"
-                              @click="snackbarForEdit = false"
-                            >
-                              关闭
-                            </v-btn>
-                          </template>
-                        </v-snackbar>
-                      </div>
-                      <div v-else>
-                        <v-btn block @click="editMission(mission)">Edit</v-btn>
+                        <v-text-field
+                          outlined
+                          v-model="editingTitle"
+                          :label="`${mission.title}`"
+                          :disabled="!EDITING"
+                        ></v-text-field>
+                      </v-list-item-content>
+                      <v-list-item-content class="indigo--text">
+                        <div
+                          class="ma-2 d-flex justify-center font-weight-black indigo--text"
+                        >
+                          任务细节：
+                        </div>
+                        <v-textarea
+                          outlined
+                          v-model="editingDetail"
+                          :label="`${mission.detail}`"
+                          :disabled="!EDITING"
+                        ></v-textarea>
+                      </v-list-item-content>
 
-                        <v-snackbar v-model="snackbarForSave">
-                          任务已保存！
-                          <template v-slot:action="{ attrs }">
-                            <v-btn
-                              color="green"
-                              text
-                              v-bind="attrs"
-                              @click="snackbarForSave = false"
-                            >
-                              关闭
-                            </v-btn>
-                          </template>
-                        </v-snackbar>
-                      </div>
-                    </v-form>
-                  </v-list>
-                </v-list-group>
+                      <v-list-item-content class="indigo--text">
+                        <div
+                          class="ma-2 d-flex justify-center font-weight-black indigo--text"
+                        >
+                          对应故事：
+                        </div>
 
-                <v-scroll-x-transition> </v-scroll-x-transition>
-                <v-list-item-action>
-                  <v-icon @click="deleteMission(mission)">mdi-close</v-icon>
-                </v-list-item-action>
-              </v-list-item>
-            </v-list>
-          </template>
-        </v-slide-y-transition>
-      </v-card>
+                        <v-select
+                          outlined
+                          v-model="editingPlotTitle"
+                          :items="plotsTitle"
+                          :label="plotIdRefTitle[mission.plot.id]"
+                          :disabled="!EDITING"
+                        ></v-select>
+                      </v-list-item-content>
+                      <v-list-content>
+                        <div>
+                          {{ mission.user.id }}
+                        </div>
+                        <div>
+                          {{ currentUserAuth.uid }}
+                        </div>
+                        <div>{{ mission.plot.id }}</div>
+                      </v-list-content>
+                    </v-flex>
+                  </v-layout>
 
-      <v-divider class="mb-4"></v-divider>
+                  <div v-if="EDITING">
+                    <v-btn block @click="saveMission(mission)">Save</v-btn>
+                    <v-snackbar v-model="snackbarForEdit">
+                      编辑模式已启动！
+                      <template v-slot:action="{ attrs }">
+                        <v-btn
+                          color="pink"
+                          text
+                          v-bind="attrs"
+                          @click="snackbarForEdit = false"
+                        >
+                          关闭
+                        </v-btn>
+                      </template>
+                    </v-snackbar>
+                  </div>
+                  <div v-else>
+                    <v-btn block @click="editMission(mission)">Edit</v-btn>
 
-      <v-card v-if="missions.length > 0">
-        <v-slide-y-transition class="py-0" group tag="v-list">
-          <template v-for="(mission, i) in missions">
-            <v-divider v-if="mission.finished == false" :key="i"></v-divider>
-            <v-list-item :key="mission.id" v-if="mission.finished == false">
-              <v-list-item-action>
-                <v-checkbox
-                  v-model="mission.finished"
-                  @click="changeMissionFinishedStatus(mission)"
-                >
-                  <template v-slot:label>
-                    <div :class="'primary--text'" class="ml-4">
-                      {{ mission.title }}
-                    </div>
-                  </template>
-                </v-checkbox>
-              </v-list-item-action>
+                    <v-snackbar v-model="snackbarForSave">
+                      任务已保存！
+                      <template v-slot:action="{ attrs }">
+                        <v-btn
+                          color="green"
+                          text
+                          v-bind="attrs"
+                          @click="snackbarForSave = false"
+                        >
+                          关闭
+                        </v-btn>
+                      </template>
+                    </v-snackbar>
+                  </div>
+                </v-form>
+              </v-list>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </template>
+      </v-expansion-panels>
 
-              <v-spacer></v-spacer>
-              <v-scroll-x-transition> </v-scroll-x-transition>
-              <v-icon class="mx-1" @click="deleteMission(mission)"
-                >mdi-close</v-icon
-              >
-
-              <v-scroll-x-transition> </v-scroll-x-transition>
-              <v-icon class="mx-1" @click="deleteMission(mission)"
-                >mdi-close</v-icon
-              >
-            </v-list-item>
-          </template>
-        </v-slide-y-transition>
-      </v-card>
-
-       <v-divider class="mb-4"></v-divider>
-
-      <v-card v-if="missions.length > 0">
-        <v-slide-y-transition class="py-0" group tag="v-list">
-          <template v-for="(mission, i) in missions">
-            <v-divider v-if="mission.finished == false" :key="i"></v-divider>
-            <v-list-item :key="mission.id" v-if="mission.finished == false">
-              <v-list-item-action>
-                <v-checkbox
-                  v-model="mission.finished"
-                  @click="changeMissionFinishedStatus(mission)"
-                >
-                  <template v-slot:label>
-                    <div :class="'primary--text'" class="ml-4">
-                      {{ mission.title }}
-                    </div>
-                  </template>
-                </v-checkbox>
-              </v-list-item-action>
-
-              <v-spacer></v-spacer>
-
-              <v-scroll-x-transition> </v-scroll-x-transition>
-              <v-icon class="mx-1" @click="deleteMission(mission)"
-                >mdi-close</v-icon
-              >
-            </v-list-item>
-          </template>
-        </v-slide-y-transition>
-      </v-card>
-
-      <v-divider class="my-8"></v-divider>
+      <v-divider class="my-4"></v-divider>
 
       <v-card v-if="missions.length > 0">
         <v-slide-y-transition class="py-0" group tag="v-list">
@@ -346,10 +281,6 @@
             </v-list-item>
           </template>
         </v-slide-y-transition>
-        <!-- <div>{{ firebase.auth().currentUserInfo.uid }}</div> -->
-        <!-- <div>{{ currentUserInfo }}</div>
-        <div>{{ currentUserAuth.uid }}</div>
-        <div>{{ currentUserRef }}</div> -->
       </v-card>
     </div>
   </v-container>
@@ -416,6 +347,7 @@ export default {
 
   data() {
     return {
+      expansionPanelForDetail: {},
       plotIdRefTitle: {},
       // VGdRrXe3WB86oOO4w7kl: "make me better",
 
@@ -449,7 +381,7 @@ export default {
       EDITING: false,
       editingTitle: "",
       editingDetail: "",
-      editingPlot: "",
+      editingPlotTitle: "",
     };
   },
 
@@ -506,6 +438,13 @@ export default {
   },
 
   methods: {
+    changeDetailExpansionPanel(missionId) {
+      this.expansionPanelForDetail[missionId] = !this.expansionPanelForDetail[
+        missionId
+      ];
+      console.log(this.expansionPanelForDetail[missionId]);
+      console.log(missionId);
+    },
     setupFirebase() {
       firebase.auth().onAuthStateChanged((user) => {
         this.loggedIn = !!user;
@@ -614,7 +553,6 @@ export default {
         if (this.plotIdRefTitle[plotId[key]] == this.selectPlot) {
           targetPlotId = plotId[key];
         }
-        console.log(targetPlotId);
       }
 
       db.collection("missions").add({
@@ -656,26 +594,34 @@ export default {
     editMission(mission) {
       this.editingTitle = mission.title;
       this.editingDetail = mission.detail;
-      //   this.editingMissionType = mission.missionType;
-
-      this.EDITING = !this.EDITING;
+      this.editingPlotTitle = this.plotIdRefTitle[mission.plot.id];
+      this.editingPlotTitle = this.EDITING = !this.EDITING;
       this.snackbarForEdit = true;
     },
 
     //保存任务信息
     saveMission(mission) {
+      var plotId = Object.keys(this.plotIdRefTitle).sort(); // 字典元素按key值排序
+      var editingPlotId = undefined;
+      for (var key in plotId) {
+        if (this.plotIdRefTitle[plotId[key]] == this.editingPlotTitle) {
+          editingPlotId = plotId[key];
+        }
+      }
       db.collection("missions")
         .doc(mission.id)
         .update({
           title: this.editingTitle,
           detail: this.editingDetail,
+          plot: db.doc("plots/" + editingPlotId),
         })
         .catch((error) => {
           console.error(error);
         });
       this.getMissions();
-      this.editingTitle = "";
-      this.editingDetail = "";
+      this.editingTitle = undefined;
+      this.editingDetail = undefined;
+      this.editingPlotTitle = undefined;
 
       this.EDITING = !this.EDITING;
       this.snackbarForSave = true;
