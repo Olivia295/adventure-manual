@@ -6,7 +6,6 @@
         v-model="title"
         hide-details="auto"
         label="输入你的任务吧~"
-        :error-messages="titleErrors"
         required
         solo
         @keydown.enter="submitNewMission"
@@ -34,7 +33,8 @@
             </v-list-item-content>
           </template>
           <form class="ma-4">
-            <v-textarea outlined v-model="detail" label="任务细节"></v-textarea>
+            <v-textarea outlined v-model="detail" label="任务细节">
+            </v-textarea>
 
             <v-select
               outlined
@@ -43,7 +43,8 @@
               :error-messages="selectErrors"
               label="对应剧情"
               required
-            ></v-select>
+            >
+            </v-select>
 
             <v-layout align-center justify-center>
               <v-btn
@@ -97,9 +98,9 @@
       <v-divider class="mb-4"></v-divider>
 
       <v-expansion-panels>
-        <template v-for="(mission, i) in missions">
-          <v-expansion-panel v-if="mission.finished == false" :key="i">
-            <v-row class="text--red">
+        <template v-for="(mission, index) in missions">
+          <v-expansion-panel v-if="mission.finished == false" :key="index">
+            <v-row>
               <v-col cols="2">
                 <v-checkbox
                   class="mx-4"
@@ -192,20 +193,12 @@
                           :disabled="!EDITING"
                         ></v-select>
                       </v-list-item-content>
-                      <v-list-content>
-                        <div>
-                          {{ mission.user.id }}
-                        </div>
-                        <div>
-                          {{ currentUserAuth.uid }}
-                        </div>
-                        <div>{{ mission.plot.id }}</div>
-                      </v-list-content>
+                      <v-list-content> </v-list-content>
                     </v-flex>
                   </v-layout>
 
                   <div v-if="EDITING">
-                    <v-btn block @click="saveMission(mission)">Save</v-btn>
+                    <v-btn block @click="saveMission(mission)">保存</v-btn>
                     <v-snackbar v-model="snackbarForEdit">
                       编辑模式已启动！
                       <template v-slot:action="{ attrs }">
@@ -221,7 +214,7 @@
                     </v-snackbar>
                   </div>
                   <div v-else>
-                    <v-btn block @click="editMission(mission)">Edit</v-btn>
+                    <v-btn block @click="editMission(mission)">编辑</v-btn>
 
                     <v-snackbar v-model="snackbarForSave">
                       任务已保存！
@@ -248,8 +241,8 @@
 
       <v-card v-if="missions.length > 0">
         <v-slide-y-transition class="py-0" group tag="v-list">
-          <template v-for="(mission, i) in missions">
-            <v-divider v-if="mission.finished == true" :key="i"></v-divider>
+          <template v-for="(mission, index) in missions">
+            <v-divider v-if="mission.finished == true" :key="index"></v-divider>
             <v-list-item :key="mission.id" v-if="mission.finished == true">
               <v-list-item-action>
                 <v-checkbox
@@ -347,7 +340,7 @@ export default {
 
   data() {
     return {
-      expansionPanelForDetail: {},
+      //   expansionPanelForDetail: {},
       plotIdRefTitle: {},
       // VGdRrXe3WB86oOO4w7kl: "make me better",
 
@@ -438,13 +431,6 @@ export default {
   },
 
   methods: {
-    changeDetailExpansionPanel(missionId) {
-      this.expansionPanelForDetail[missionId] = !this.expansionPanelForDetail[
-        missionId
-      ];
-      console.log(this.expansionPanelForDetail[missionId]);
-      console.log(missionId);
-    },
     setupFirebase() {
       firebase.auth().onAuthStateChanged((user) => {
         this.loggedIn = !!user;
@@ -509,6 +495,7 @@ export default {
       });
       this.missions = missions;
     },
+    //渲染剧情列表
     getPlots() {
       let plots = [];
       let plotsTitle = [];
@@ -595,7 +582,8 @@ export default {
       this.editingTitle = mission.title;
       this.editingDetail = mission.detail;
       this.editingPlotTitle = this.plotIdRefTitle[mission.plot.id];
-      this.editingPlotTitle = this.EDITING = !this.EDITING;
+      this.editingPlotTitle = mission.plot;
+      this.EDITING = !this.EDITING;
       this.snackbarForEdit = true;
     },
 
@@ -636,7 +624,7 @@ export default {
           console.error(error);
         });
       //重新渲染一次任务
-      this.getMissions();
+    //   this.getMissions();
     },
   },
   created() {
@@ -653,9 +641,7 @@ export default {
         }
       });
     });
-
     this.getMissions();
-
     this.getPlots();
   },
 };

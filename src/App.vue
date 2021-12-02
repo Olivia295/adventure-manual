@@ -1,7 +1,5 @@
 <template>
-
   <v-app class="primary lighten-4">
-      
     <Navbar />
     <v-main class="indigo50">
       <router-view></router-view>
@@ -19,22 +17,18 @@ export default {
   name: "App",
   data() {
     return {
-        loggedIn: false,
-        icons: [
-        'mdi-facebook',
-        'mdi-twitter',
-        'mdi-linkedin',
-        'mdi-instagram',
-      ],
+      loggedIn: false,
+      icons: ["mdi-facebook", "mdi-twitter", "mdi-linkedin", "mdi-instagram"],
     };
   },
-  
+
   mounted() {
     console.log(this.$vuetify.breakpoint.width);
+    console.log(this.$vuetify.lang.current);
+    // this.$vuetify.lang.current = "en";
+    // console.log(this.$vuetify.lang.current);
   },
 
-  methods: {
-    
-  },
+  methods: {},
 };
 </script>

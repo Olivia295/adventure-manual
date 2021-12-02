@@ -6,11 +6,12 @@ import '@mdi/font/css/materialdesignicons.css' // Ensure you are using css-loade
 Vue.use(Vuetify);
 
 import zhHans from 'vuetify/lib/locale/zh-Hans'
+import en from 'vuetify/lib/locale/en'
 
 Vue.component('my-component', {
     methods: {
         changeLocale() {
-            this.$vuetify.lang.current = 'sv'
+            this.$vuetify.lang.current = 'en'
         },
     },
 })
@@ -27,7 +28,7 @@ export default new Vuetify({
     },
     lang: {
         locales: {
-            zhHans,
+            zhHans,en
         },
         current: 'zhHans',
     },

@@ -11,7 +11,7 @@
 
           <v-card>
             <v-card-title>
-              <span class="text-h5">创建新剧情</span>
+              <div class="text-h5">创建新剧情</div>
             </v-card-title>
 
             <v-card-text>
@@ -46,7 +46,7 @@
                   </v-col>
                 </v-row>
               </v-container>
-              <div color="black mx-4">选择剧情颜色</div>
+              <span color="black mx-4">选择剧情颜色</span>
               <v-container>
                 <v-row>
                   <v-col class="d-flex justify-center">
@@ -58,11 +58,15 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="closePlotDialog">
-                Close
+              <v-btn
+                color="blue darken-1"
+                text
+                @click="closeDialogForAddingNewPlot"
+              >
+                关闭
               </v-btn>
               <v-btn color="blue darken-1" text @click="submitNewPlot">
-                Save
+                保存
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -71,7 +75,7 @@
     </v-container>
 
     <div v-if="plots.length > 0" class="my-4">
-      <template v-for="(plot, i) in plots">
+      <template v-for="(plot, index) in plots">
         <v-card
           :key="plot.id"
           class="mx-auto"
@@ -100,7 +104,7 @@
                 </v-btn>
               </template>
 
-              <v-card>
+              <v-card :key="plot.id">
                 <v-card-title>
                   <span class="text-h5"
                     >为 {{ plot.title }} 剧情添加新任务：</span
@@ -116,7 +120,8 @@
                           prepend-icon="mdi-comment"
                           v-model="newMissionTitle"
                           required
-                        ></v-text-field>
+                        >
+                        </v-text-field>
                       </v-col>
                       <v-col cols="12">
                         <v-textarea
@@ -127,22 +132,23 @@
                         ></v-textarea>
                       </v-col>
                     </v-row>
-                  </v-container> </v-card-text
-                ><v-card-actions>
-                  <v-spacer></v-spacer>
+                  </v-container>
+                </v-card-text>
+
+                <v-card-actions>
                   <v-btn
                     color="blue darken-1"
                     text
-                    @click="closeMissionDialog(plot.id)"
+                    @click="closeDialogForAddingNewMissionInPlot(plot)"
                   >
-                    Close
+                    关闭
                   </v-btn>
                   <v-btn
                     color="blue darken-1"
                     text
-                    @click="submitNewMission(plot)"
+                    @click="submitNewMissionInPlot(plot)"
                   >
-                    Save
+                    保存
                   </v-btn>
                 </v-card-actions>
               </v-card>
@@ -167,8 +173,9 @@
                     tile
                   >
                     <div class="class-h5 font-bold">剧情内容：</div>
-                  </v-card> </v-col
-                ><v-col>
+                  </v-card>
+                </v-col>
+                <v-col>
                   <v-card
                     class="d-flex justify-center mb-4"
                     :color="
@@ -185,7 +192,7 @@
               </v-row>
             </v-container>
 
-            <div>
+            <div :key="plot.id">
               <v-data-table
                 :headers="headers"
                 :items="plot.missions"
@@ -234,12 +241,46 @@
               </v-row>
             </v-container>
           </v-card-text>
+
           <v-card-actions>
-              <v-spacer></v-spacer>
-            <v-btn block :color="plot.color">删除该剧情</v-btn></v-card-actions
-          >
+            <v-spacer></v-spacer>
+            <v-bottom-sheet v-model="sheetForDetelePlot[plot.id]">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn block :color="plot.color" v-bind="attrs" v-on="on"
+                  >删除该剧情</v-btn
+                >
+              </template>
+              <v-sheet class="text-center" height="200px">
+                <v-btn
+                  class="mt-6"
+                  text
+                  color="red"
+                  plain
+                  @click="deletePlotAndItsMission(plot)"
+                >
+                  删除
+                </v-btn>
+                <v-btn
+                  class="mt-6"
+                  text
+                  color="green"
+                  plain
+                  @click="closeSheetForDeletePlot(plot)"
+                >
+                  返回
+                </v-btn>
+                <div class="py-3">
+                  你确定要删除剧情{{ plot.title }}吗？
+                  <div class="text-caption">
+                    这将会删除所有属于该剧情的任务。
+                  </div>
+                </div>
+              </v-sheet>
+            </v-bottom-sheet>
+          </v-card-actions>
         </v-card>
-        <v-divider :key="i" class="my-2"></v-divider>
+
+        <v-divider :key="index" class="my-2"></v-divider>
       </template>
     </div>
   </v-container>
@@ -291,14 +332,18 @@ export default {
   data() {
     return {
       type: "hexa",
-      hexa: "#FF00FFFF",
+      hexa: "#0000000",
 
+      sheetForDetelePlot: {},
       dialogForAddingNewMission: {},
       dialogForAddingNewPlot: false,
+      //保存剧情信息
+      plots: [],
+
       headers: [
-        { text: "Title", value: "title", align: "start", sortable: false },
-        { text: "Detail", value: "detail", align: "center" },
-        { text: "Finished", value: "finished", align: "end" },
+        { text: "任务名字", value: "title", align: "start", sortable: false },
+        { text: "任务细节", value: "detail", align: "center" },
+        { text: "完成情况", value: "finished", align: "end" },
       ],
       //登录信息
       currentUserInfo: undefined,
@@ -306,14 +351,15 @@ export default {
       currentUserAuth: undefined,
       loggedIn: undefined,
 
+      //添加新任务的变量
       currentPlotRef: undefined,
-      newMissionTitle: "",
-      newMissionDetail: "",
+      newMissionTitle: undefined,
+      newMissionDetail: undefined,
 
+      //添加新剧情的变量
       newPlotTitle: undefined,
       newPlotContent: undefined,
       newPlotReward: undefined,
-
       selectPlotType: "(未选定)",
       plotType: [
         "(未选定)",
@@ -323,11 +369,10 @@ export default {
         "忠诚任务",
         "隐藏任务",
       ],
-
-      plots: [],
     };
   },
   computed: {
+    // 获取/设定颜色
     color: {
       get() {
         return this[this.type];
@@ -354,15 +399,6 @@ export default {
   },
 
   methods: {
-    changeMissionFinishedStatus(mission) {
-      db.collection("missions")
-        .doc(mission.id)
-        .update({ finished: !mission.finished })
-        .catch((error) => {
-          console.error(error);
-        });
-      this.getPlots();
-    },
     //获取当前时间戳
     updateTimestamps() {
       return (this.createdDate = new Date());
@@ -408,7 +444,7 @@ export default {
         }
       });
     },
-    //渲染任务列表
+    //渲染剧情列表
     getPlots() {
       let plots = [];
       db.collection("plots").onSnapshot((res) => {
@@ -430,6 +466,7 @@ export default {
       });
       this.plots = plots;
     },
+    //渲染任务列表
     getMissions(currentPlotRef) {
       let missions = [];
       db.collection("missions").onSnapshot((res) => {
@@ -448,12 +485,15 @@ export default {
       });
       return missions;
     },
-    closeMissionDialog(plotId) {
-      this.dialogForAddingNewMission[plotId] = false;
+    //新任务dialog
+    //改变 添加该剧情的任务dialog 的状态
+    closeDialogForAddingNewMissionInPlot(plot) {
+      this.dialogForAddingNewMission[plot.id] = false;
       this.newMissionTitle = undefined;
       this.newMissionDetail = undefined;
     },
-    submitNewMission(plot) {
+    //提交该剧情的新任务
+    submitNewMissionInPlot(plot) {
       db.collection("missions").add({
         title: this.newMissionTitle,
         detail: this.newMissionDetail,
@@ -462,15 +502,18 @@ export default {
         plot: db.doc("plots/" + plot.id),
         finished: false,
       });
-      this.closeMissionDialog(plot.id);
+      this.closeDialogForAddingNewMissionInPlot(plot);
     },
-
-    closePlotDialog() {
+    //新剧情dialog
+    //改变 添加新剧情的dialog 的状态
+    closeDialogForAddingNewPlot() {
       this.dialogForAddingNewPlot = false;
       this.newPlotTitle = undefined;
       this.newPlotContent = undefined;
+      this.selectPlotType = "(未选定)";
       this.newPlotReward = undefined;
     },
+    //提交新剧情
     submitNewPlot() {
       db.collection("plots").add({
         title: this.newPlotTitle,
@@ -481,7 +524,43 @@ export default {
         user: db.doc("users/" + this.currentUserRef),
         color: this.showColor,
       });
-      this.closePlotDialog();
+      this.closeDialogForAddingNewPlot();
+    },
+    //删除剧情sheet
+    //改变 删除剧情sheet 的状态
+    closeSheetForDeletePlot(plot) {
+      this.sheetForDetelePlot[plot.id] = false;
+    },
+    //删除指定剧情及其所有任务
+    deletePlotAndItsMission(plot) {
+      console.log(plot);
+      for (var i = 0; i < plot.missions.length; i++) {
+        console.log(plot.missions[i].id);
+        db.collection("missions")
+          .doc(plot.missions[i].id)
+          .delete()
+          .catch((error) => {
+            console.error(error);
+          });
+      }
+      db.collection("plots")
+        .doc(plot.id)
+        .delete()
+        .catch((error) => {
+          console.error(error);
+        });
+      this.getPlots();
+      this.closeSheetForDeletePlot(plot);
+    },
+    //改变任务完成情况
+    changeMissionFinishedStatus(mission) {
+      db.collection("missions")
+        .doc(mission.id)
+        .update({ finished: !mission.finished })
+        .catch((error) => {
+          console.error(error);
+        });
+      this.getPlots();
     },
   },
   created() {
@@ -498,7 +577,6 @@ export default {
         }
       });
     });
-
     this.getPlots();
   },
 };
