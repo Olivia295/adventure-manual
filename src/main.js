@@ -11,6 +11,7 @@ Vue.use(firestorePlugin)
 import "@/assets/styles/main.css";
 
 import vuetify from './plugins/vuetify'
+import Vuelidate from 'vuelidate'
 
 import axios from 'axios'
 import firebase from 'firebase/compat/app'
@@ -28,6 +29,7 @@ Vue.prototype.$moment = moment
 let app;
 
 Vue.use(vuetify);
+Vue.use(Vuelidate);
 
 firebase.auth().onAuthStateChanged(user => {
     console.log(user);

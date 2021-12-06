@@ -6,6 +6,7 @@ import Team from '../views/Team.vue'
 
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
+import Calendar from '@/views/Calendar.vue'
 
 import firebase from "firebase/compat/app";
 import "firebase/auth"
@@ -48,6 +49,14 @@ const routes = [{
         path: '/register',
         name: 'Register',
         component: Register,
+        meta: {
+            requiresUnauth: true
+        }
+    },
+    {
+        path: '/calendar',
+        name: 'Calendar',
+        component: Calendar,
         meta: {
             requiresUnauth: true
         }

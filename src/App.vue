@@ -25,8 +25,6 @@ export default {
   mounted() {
     console.log(this.$vuetify.breakpoint.width);
     console.log(this.$vuetify.lang.current);
-    // this.$vuetify.lang.current = "en";
-    // console.log(this.$vuetify.lang.current);
   },
 
   methods: {},

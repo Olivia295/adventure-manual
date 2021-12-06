@@ -6,13 +6,15 @@
         v-model="title"
         hide-details="auto"
         label="输入你的任务吧~"
+        :error-messages="titleErrors"
         required
         solo
-        @keydown.enter="submitNewMission"
+        @input="$v.title.$touch()"
+        @keydown.enter="submitNewMission()"
       >
         <template v-slot:append>
           <v-fade-transition>
-            <v-icon v-if="title" @click="submitNewMission">
+            <v-icon v-if="title" @click="submitNewMission()">
               mdi-arrow-left
             </v-icon>
           </v-fade-transition>
@@ -40,7 +42,6 @@
               outlined
               v-model="selectPlot"
               :items="Object.values(plotIdRefTitle)"
-              :error-messages="selectErrors"
               label="对应剧情"
               required
             >
@@ -329,13 +330,6 @@ export default {
 
   validations: {
     title: { required, maxLength: maxLength(10) },
-    detail: {},
-    selectType: { required },
-    checkbox: {
-      checked(val) {
-        return val;
-      },
-    },
   },
 
   data() {
@@ -358,8 +352,6 @@ export default {
 
       //渲染变量
       missions: [],
-
-      intervalId: null,
 
       //提交变量
       title: "",
@@ -395,38 +387,32 @@ export default {
     titleErrors() {
       const errors = [];
       if (!this.$v.title.$dirty) return errors;
-      !this.$v.title.maxLength &&
-        errors.push("Title must be at most 10 characters long");
-      !this.$v.title.required && errors.push("Title is required.");
-      return errors;
-    },
-    selectErrors() {
-      const errors = [];
-      if (!this.$v.selectType.$dirty) return errors;
-      !this.$v.selectType.required && errors.push("Type is required");
+      !this.$v.title.required &&
+        errors.push("请填写任务名字！");
       return errors;
     },
   },
-  watch: {
-    setupFirebase() {
-      firebase.auth().onAuthStateChanged((user) => {
-        this.loggedIn = !!user;
-        if (user) {
-          // User is signed in.
-          console.log("signed in");
-          this.currentUserAuth = user;
-          this.getUsers(user);
-          this.loggedIn = true;
-        } else {
-          // No user is signed in.
-          this.loggedIn = false;
-          console.log("signed out", this.loggedIn);
-        }
-      });
-    },
-  },
+//   watch: {
+//     setupFirebase() {
+//       firebase.auth().onAuthStateChanged((user) => {
+//         this.loggedIn = !!user;
+//         if (user) {
+//           // User is signed in.
+//           console.log("signed in");
+//           this.currentUserAuth = user;
+//           this.getUsers(user);
+//           this.loggedIn = true;
+//         } else {
+//           // No user is signed in.
+//           this.loggedIn = false;
+//           console.log("signed out", this.loggedIn);
+//         }
+//       });
+//     },
+//   },
 
   mounted() {
+      this.getMissions();
     this.setupFirebase();
   },
 
@@ -524,7 +510,10 @@ export default {
 
     //提交任务
     submitNewMission() {
-      this.updateTimestamps();
+        this.$v.$touch()
+        if(this.title != "")
+        {
+            this.updateTimestamps();
       //当detail为空时，显示“(空)”
       if (this.detail == "") {
         this.detail = "(空)";
@@ -551,6 +540,8 @@ export default {
         finished: false,
       });
       this.clearAll();
+        }
+      
     },
 
     //清除Submit任务框的内容
@@ -624,7 +615,7 @@ export default {
           console.error(error);
         });
       //重新渲染一次任务
-    //   this.getMissions();
+      this.getMissions();
     },
   },
   created() {

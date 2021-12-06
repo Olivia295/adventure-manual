@@ -1,9 +1,5 @@
 <template>
   <nav>
-    <!-- <v-snackbar v-model="snackbar" :timeout="4000" top color="success">
-      <span>Awesome!</span>
-      <v-btn text color="white" @click="snackbar = false">Close</v-btn>
-    </v-snackbar> -->
     <v-app-bar depressed flat app color="indigo100">
       <v-app-bar-nav-icon
         class="grey--text"
@@ -42,28 +38,10 @@
         </v-card>
       </v-menu>
 
-      <v-btn
-        text
-        class="d-none d-lg-block"
-        color="indigo900"
-        @click="sheet = !sheet"
-      >
+      <!-- <v-btn text class="d-none d-lg-block" color="indigo900">
         <span>Sign Out</span>
         <v-icon right>mdi-logout</v-icon>
-      </v-btn>
-      <v-bottom-sheet v-model="sheet" persistent>
-        <v-sheet class="text-center" height="200px">
-          <v-btn class="mt-6" text color="green" plain @click="sheet = !sheet">
-            Not Yet
-          </v-btn>
-          <v-btn class="mt-6" text color="red" plain @click="sheet = !sheet">
-            Log Out
-          </v-btn>
-          <div class="py-3">
-            Are you ready to log out?
-          </div>
-        </v-sheet>
-      </v-bottom-sheet>
+      </v-btn> -->
     </v-app-bar>
     <v-card v-if="loggedIn" class="mx-auto" width="256" tile>
       <v-navigation-drawer app v-model="drawer" color="indigo100">
@@ -125,11 +103,38 @@
           </v-list-item-group>
           <v-list-item class="my-4">
             <v-list-item-content>
-              <v-btn @click="signOut">Sign out</v-btn>
+              <v-btn @click="changeSheet()"
+                >Sign out
+                <v-icon right>mdi-logout</v-icon>
+              </v-btn>
+              <v-bottom-sheet v-model="sheet" persistent>
+                <v-sheet class="text-center" height="200px">
+                  <v-btn
+                    class="mt-6"
+                    text
+                    color="green"
+                    plain
+                    @click="changeSheet()"
+                  >
+                    Not Yet
+                  </v-btn>
+                  <v-btn
+                    class="mt-6"
+                    text
+                    color="red"
+                    plain
+                    @click="signOut()"
+                  >
+                    Log Out
+                  </v-btn>
+                  <div class="py-3">
+                    Are you ready to log out?
+                  </div>
+                </v-sheet>
+              </v-bottom-sheet>
             </v-list-item-content>
           </v-list-item>
         </v-list>
-
       </v-navigation-drawer>
     </v-card>
     <v-card v-else>
@@ -171,7 +176,7 @@ export default {
       links: [
         { icon: "mdi-view-dashboard", text: "Home", route: "/" },
         { icon: "mdi-view-dashboard", text: "Dashboard", route: "/missions" },
-        { icon: "mdi-folder", text: "My Projects", route: "/projects" },
+        { icon: "mdi-folder", text: "Calendar", route: "/calendar" },
         { icon: "mdi-account", text: "Team", route: "/team" },
       ],
       loggedIn: false,
@@ -189,7 +194,7 @@ export default {
           // User is signed in.
           console.log("signed in");
           this.currentUserAuth = user;
-        //   console.log(this.currentUserAuth);
+          //   console.log(this.currentUserAuth);
           this.getUsers(user);
           this.loggedIn = true;
         } else {
@@ -208,6 +213,9 @@ export default {
       });
     },
 
+    changeSheet() {
+        this.sheet = !this.sheet
+    },
     async signOut() {
       try {
         await firebase.auth().signOut();
@@ -215,6 +223,7 @@ export default {
       } catch (err) {
         console.log(err);
       }
+      this.changeSheet();
     },
   },
 };
