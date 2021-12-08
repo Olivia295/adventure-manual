@@ -240,80 +240,163 @@
 
       <v-divider class="my-4"></v-divider>
 
-      <v-card v-if="missions.length > 0">
-        <v-slide-y-transition class="py-0" group tag="v-list">
-          <template v-for="(mission, index) in missions">
-            <v-divider v-if="mission.finished == true" :key="index"></v-divider>
-            <v-list-item :key="mission.id" v-if="mission.finished == true">
-              <v-list-item-action>
+      <v-expansion-panels>
+        <template v-for="(mission, index) in missions">
+          <v-expansion-panel v-if="mission.finished == true" :key="index">
+            <v-row>
+              <v-col cols="2">
                 <v-checkbox
+                  class="mx-4"
                   v-model="mission.finished"
-                  :color="mission.finished && 'indigo'"
                   @click="changeMissionFinishedStatus(mission)"
                 >
-                  <template v-slot:label>
-                    <div
-                      :class="
-                        mission.finished &&
-                          'grey--text' &&
-                          'text-decoration-line-through'
-                      "
-                      class="ml-4"
-                    >
-                      {{ mission.title }}
-                    </div>
-                  </template>
                 </v-checkbox>
-              </v-list-item-action>
+              </v-col>
+              <v-col cols="8">
+                <v-expansion-panel-header
+                  ><div
+                    :class="
+                      (mission.finished && 'grey--text') || 'primary--text'
+                    "
+                    class="my-2"
+                    v-text="mission.title"
+                  ></div
+                ></v-expansion-panel-header>
+              </v-col>
+              <v-col cols="2">
+                <v-list-item-action>
+                  <v-icon class="my-2" @click="deleteMission(mission)"
+                    >mdi-close</v-icon
+                  >
+                </v-list-item-action>
+              </v-col>
+            </v-row>
+            <v-expansion-panel-content>
+              <v-list class="d-flex justify-center">
+                <v-form>
+                  <v-layout wrap align-center>
+                    <v-flex>
+                      <v-list-item-content class="ma-4">
+                        <v-flex align-center justify-center column>
+                          <v-layout row align-center justify-center>
+                            <div class="ma-2 indigo--text font-weight-black">
+                              任务创建时间：
+                            </div>
+                          </v-layout>
+                          <v-flex row align-center>
+                            <v-card-text
+                              class="ma-2"
+                              v-model="mission.createdTimestamps"
+                            >
+                              {{ timestampToTime(mission.createdTimestamps) }}
+                            </v-card-text>
+                          </v-flex>
+                        </v-flex>
+                      </v-list-item-content>
+                      <v-list-item-content class="ma-4">
+                        <v-flex align-center justify-center column>
+                          <v-layout row align-center justify-center>
+                            <div class="ma-2 indigo--text font-weight-black">
+                              任务完成时间：
+                            </div>
+                          </v-layout>
+                          <v-flex row align-center>
+                            <v-card-text
+                              class="ma-2"
+                              v-model="mission.finishedTimestamps"
+                            >
+                              {{ timestampToTime(mission.finishedTimestamps) }}
+                            </v-card-text>
+                          </v-flex>
+                        </v-flex>
+                      </v-list-item-content>
+                      <v-list-item-content class="">
+                        <div
+                          class="ma-2 d-flex justify-center font-weight-black indigo--text"
+                        >
+                          任务名字：
+                        </div>
 
-              <v-spacer></v-spacer>
+                        <v-text-field
+                          outlined
+                          v-model="editingTitle"
+                          :label="`${mission.title}`"
+                          :disabled="!EDITING"
+                        ></v-text-field>
+                      </v-list-item-content>
+                      <v-list-item-content class="indigo--text">
+                        <div
+                          class="ma-2 d-flex justify-center font-weight-black indigo--text"
+                        >
+                          任务细节：
+                        </div>
+                        <v-textarea
+                          outlined
+                          v-model="editingDetail"
+                          :label="`${mission.detail}`"
+                          :disabled="!EDITING"
+                        ></v-textarea>
+                      </v-list-item-content>
 
-              <v-scroll-x-transition> </v-scroll-x-transition>
-              <v-icon class="mx-1" @click="deleteMission(mission)"
-                >mdi-close</v-icon
-              >
-            </v-list-item>
-          </template>
-        </v-slide-y-transition>
-      </v-card>
+                      <v-list-item-content class="indigo--text">
+                        <div
+                          class="ma-2 d-flex justify-center font-weight-black indigo--text"
+                        >
+                          对应故事：
+                        </div>
+
+                        <v-select
+                          outlined
+                          v-model="editingPlotTitle"
+                          :items="plotsTitle"
+                          :label="plotIdRefTitle[mission.plot.id]"
+                          :disabled="!EDITING"
+                        ></v-select>
+                      </v-list-item-content>
+                      <v-list-content> </v-list-content>
+                    </v-flex>
+                  </v-layout>
+
+                  <div v-if="EDITING">
+                    <v-btn block @click="saveMission(mission)">保存</v-btn>
+                    <v-snackbar v-model="snackbarForEdit">
+                      编辑模式已启动！
+                      <template v-slot:action="{ attrs }">
+                        <v-btn
+                          color="pink"
+                          text
+                          v-bind="attrs"
+                          @click="snackbarForEdit = false"
+                        >
+                          关闭
+                        </v-btn>
+                      </template>
+                    </v-snackbar>
+                  </div>
+                  <div v-else>
+                    <v-btn block @click="editMission(mission)">编辑</v-btn>
+
+                    <v-snackbar v-model="snackbarForSave">
+                      任务已保存！
+                      <template v-slot:action="{ attrs }">
+                        <v-btn
+                          color="green"
+                          text
+                          v-bind="attrs"
+                          @click="snackbarForSave = false"
+                        >
+                          关闭
+                        </v-btn>
+                      </template>
+                    </v-snackbar>
+                  </div>
+                </v-form>
+              </v-list>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </template>
+      </v-expansion-panels>
     </div>
-  </v-container>
-  <v-container v-else style="max-width: 500px">
-    <v-alert text color="indigo400">
-      <div class="text-h5 indigo--text">
-        你还没登录！
-      </div>
-      <v-spacer></v-spacer>
-      <div>AdventureManual是一款让你养成良好记录任务习惯的应用。</div>
-
-      <v-divider class="my-4 info" style="opacity: 0.22"></v-divider>
-
-      <v-row align="center" no-gutters>
-        <v-col class="grow" cols="12" sm="8" md="10">
-          未拥有账户？注册新账户来开启冒险之旅吧！
-        </v-col>
-        <v-spacer></v-spacer>
-        <v-col class="shrink">
-          <v-btn cols="12" md="2" color="indigo" outlined to="/register">
-            注册
-          </v-btn>
-        </v-col>
-      </v-row>
-
-      <v-divider class="my-4 info" style="opacity: 0.22"></v-divider>
-
-      <v-row align="center" no-gutters>
-        <v-col class="grow" cols="12" sm="8" md="10">
-          已拥有账户？请登录以开启你的冒险之旅吧！
-        </v-col>
-        <v-spacer></v-spacer>
-        <v-col class="shrink">
-          <v-btn cols="12" md="2" color="indigo" outlined to="/login">
-            登录
-          </v-btn>
-        </v-col>
-      </v-row>
-    </v-alert>
   </v-container>
 </template>
 
@@ -334,9 +417,7 @@ export default {
 
   data() {
     return {
-      //   expansionPanelForDetail: {},
       plotIdRefTitle: {},
-      // VGdRrXe3WB86oOO4w7kl: "make me better",
 
       //登录信息
       currentUserInfo: undefined,
@@ -387,32 +468,13 @@ export default {
     titleErrors() {
       const errors = [];
       if (!this.$v.title.$dirty) return errors;
-      !this.$v.title.required &&
-        errors.push("请填写任务名字！");
+      !this.$v.title.required && errors.push("请填写任务名字！");
       return errors;
     },
   },
-//   watch: {
-//     setupFirebase() {
-//       firebase.auth().onAuthStateChanged((user) => {
-//         this.loggedIn = !!user;
-//         if (user) {
-//           // User is signed in.
-//           console.log("signed in");
-//           this.currentUserAuth = user;
-//           this.getUsers(user);
-//           this.loggedIn = true;
-//         } else {
-//           // No user is signed in.
-//           this.loggedIn = false;
-//           console.log("signed out", this.loggedIn);
-//         }
-//       });
-//     },
-//   },
 
   mounted() {
-      this.getMissions();
+    this.getMissions();
     this.setupFirebase();
   },
 
@@ -459,6 +521,7 @@ export default {
       m = m < 10 ? "0" + m : m;
       let s = date.getSeconds();
       s = s < 10 ? "0" + s : s;
+    //   return y + "年 " + MM + "月" + d + "日 ";
       return y + "年 " + MM + "月" + d + "日 " + h + "时" + m + "分" + s + "秒";
     },
 
@@ -510,38 +573,36 @@ export default {
 
     //提交任务
     submitNewMission() {
-        this.$v.$touch()
-        if(this.title != "")
-        {
-            this.updateTimestamps();
-      //当detail为空时，显示“(空)”
-      if (this.detail == "") {
-        this.detail = "(空)";
-      }
-      //当selectType为空时，显示“(未选定)”
-      if (this.selectType == null) {
-        this.selectType = "(未选定)";
-      }
-
-      var plotId = Object.keys(this.plotIdRefTitle).sort(); // 字典元素按key值排序
-      var targetPlotId = undefined;
-      for (var key in plotId) {
-        if (this.plotIdRefTitle[plotId[key]] == this.selectPlot) {
-          targetPlotId = plotId[key];
+      this.$v.$touch();
+      if (this.title != "") {
+        this.updateTimestamps();
+        //当detail为空时，显示“(空)”
+        if (this.detail == "") {
+          this.detail = "(空)";
         }
-      }
-
-      db.collection("missions").add({
-        title: this.title,
-        detail: this.detail,
-        createdTimestamps: this.updateTimestamps(),
-        user: db.doc("users/" + this.currentUserRef),
-        plot: db.doc("plots/" + targetPlotId),
-        finished: false,
-      });
-      this.clearAll();
+        //当selectType为空时，显示“(未选定)”
+        if (this.selectType == null) {
+          this.selectType = "(未选定)";
         }
-      
+
+        var plotId = Object.keys(this.plotIdRefTitle).sort(); // 字典元素按key值排序
+        var targetPlotId = undefined;
+        for (var key in plotId) {
+          if (this.plotIdRefTitle[plotId[key]] == this.selectPlot) {
+            targetPlotId = plotId[key];
+          }
+        }
+
+        db.collection("missions").add({
+          title: this.title,
+          detail: this.detail,
+          createdTimestamps: this.updateTimestamps(),
+          user: db.doc("users/" + this.currentUserRef),
+          plot: db.doc("plots/" + targetPlotId),
+          finished: false,
+        });
+        this.clearAll();
+      }
     },
 
     //清除Submit任务框的内容
@@ -561,12 +622,27 @@ export default {
 
     //更改任务完成属性
     changeMissionFinishedStatus(mission) {
-      db.collection("missions")
-        .doc(mission.id)
-        .update({ finished: mission.finished })
-        .catch((error) => {
-          console.error(error);
-        });
+      if (mission.finished == false) {
+        db.collection("missions")
+          .doc(mission.id)
+          .update({
+            finished: mission.finished,
+            finishedTimestamps: null,
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      } else {
+        db.collection("missions")
+          .doc(mission.id)
+          .update({
+            finished: mission.finished,
+            finishedTimestamps: this.updateTimestamps(),
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
     },
     //编辑任务信息
     editMission(mission) {

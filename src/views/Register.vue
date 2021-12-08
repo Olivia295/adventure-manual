@@ -49,7 +49,7 @@
     </v-form>
     <v-divider></v-divider>
     <v-card-actions>
-      <v-btn text @click="$refs.form.reset()">
+      <v-btn text @click="clearForm()">
         清空
       </v-btn>
       <v-spacer></v-spacer>

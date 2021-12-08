@@ -2,11 +2,11 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Missions from '../views/Missions.vue'
-import Team from '../views/Team.vue'
 
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
 import Calendar from '@/views/Calendar.vue'
+import Analysis from '@/views/Analysis.vue'
 
 import firebase from "firebase/compat/app";
 import "firebase/auth"
@@ -25,14 +25,6 @@ const routes = [{
         path: '/missions',
         name: 'Missions',
         component: Missions,
-        meta: {
-            requiresAuth: true
-        }
-    },
-    {
-        path: '/team',
-        name: 'Team',
-        component: Team,
         meta: {
             requiresAuth: true
         }
@@ -61,14 +53,14 @@ const routes = [{
             requiresUnauth: true
         }
     },
-    // {
-    //     path: '/secret',
-    //     name: 'Secret',
-    //     component: Secret,
-    //     meta: {
-    //         requiresAuth: true
-    //     }
-    // },
+    {
+        path: '/analysis',
+        name: 'Analysis',
+        component: Analysis,
+        meta: {
+            requiresUnauth: true
+        }
+    },
     //   {
     //     path: '/about',
     //     name: 'About',

@@ -37,11 +37,6 @@
           </v-list-item>
         </v-card>
       </v-menu>
-
-      <!-- <v-btn text class="d-none d-lg-block" color="indigo900">
-        <span>Sign Out</span>
-        <v-icon right>mdi-logout</v-icon>
-      </v-btn> -->
     </v-app-bar>
     <v-card v-if="loggedIn" class="mx-auto" width="256" tile>
       <v-navigation-drawer app v-model="drawer" color="indigo100">
@@ -118,13 +113,7 @@
                   >
                     Not Yet
                   </v-btn>
-                  <v-btn
-                    class="mt-6"
-                    text
-                    color="red"
-                    plain
-                    @click="signOut()"
-                  >
+                  <v-btn class="mt-6" text color="red" plain @click="signOut()">
                     Log Out
                   </v-btn>
                   <div class="py-3">
@@ -174,10 +163,14 @@ export default {
       sheet: false,
       selectedILink: 0,
       links: [
-        { icon: "mdi-view-dashboard", text: "Home", route: "/" },
-        { icon: "mdi-view-dashboard", text: "Dashboard", route: "/missions" },
-        { icon: "mdi-folder", text: "Calendar", route: "/calendar" },
-        { icon: "mdi-account", text: "Team", route: "/team" },
+        { icon: "mdi-home", text: "Home", route: "/" },
+        {
+          icon: "mdi-format-list-checks",
+          text: "Missions",
+          route: "/missions",
+        },
+        { icon: "mdi-calendar", text: "Calendar", route: "/calendar" },
+        { icon: "mdi-sine-wave", text: "Analysis", route: "/analysis" },
       ],
       loggedIn: false,
     };
@@ -214,7 +207,7 @@ export default {
     },
 
     changeSheet() {
-        this.sheet = !this.sheet
+      this.sheet = !this.sheet;
     },
     async signOut() {
       try {

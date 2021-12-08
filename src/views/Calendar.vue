@@ -179,7 +179,7 @@ import firebase from "firebase/compat/app";
 export default {
   data() {
     return {
-      currentUserRef:undefined,
+      currentUserRef: undefined,
 
       today: new Date().toISOString().substr(0, 10),
       focus: new Date().toISOString().substr(0, 10),
@@ -203,8 +203,8 @@ export default {
       dialog: false,
     };
   },
-  created(){
-//获取currentUserRef
+  created() {
+    //获取currentUserRef
     db.collection("users").onSnapshot((res) => {
       const changes = res.docChanges();
 
@@ -278,7 +278,7 @@ export default {
     },
 
     async getEvents() {
-        let events = [];
+      let events = [];
       db.collection("events").onSnapshot((res) => {
         const changes = res.docChanges();
         changes.forEach((change) => {
@@ -297,14 +297,14 @@ export default {
     },
     async addEvent() {
       if (this.name && this.start && this.end) {
-          console.log(this.currentUserRef)
+        console.log(this.currentUserRef);
         await db.collection("events").add({
           name: this.name,
           details: this.details,
           start: this.start,
           end: this.end,
           color: this.color,
-          user:db.doc("users/"+this.currentUserRef)
+          user: db.doc("users/" + this.currentUserRef),
         });
         this.getEvents();
         (this.name = ""),
