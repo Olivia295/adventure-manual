@@ -99,7 +99,7 @@
           <v-list-item class="my-4">
             <v-list-item-content>
               <v-btn @click="changeSheet()"
-                >Sign out
+                >登出
                 <v-icon right>mdi-logout</v-icon>
               </v-btn>
               <v-bottom-sheet v-model="sheet" persistent>
@@ -111,13 +111,13 @@
                     plain
                     @click="changeSheet()"
                   >
-                    Not Yet
+                    仍未决定好
                   </v-btn>
                   <v-btn class="mt-6" text color="red" plain @click="signOut()">
-                    Log Out
+                    现在登出
                   </v-btn>
                   <div class="py-3">
-                    Are you ready to log out?
+                    你决定现在登出吗？
                   </div>
                 </v-sheet>
               </v-bottom-sheet>
@@ -169,8 +169,8 @@ export default {
           text: "Missions",
           route: "/missions",
         },
-        { icon: "mdi-calendar", text: "Calendar", route: "/calendar" },
         { icon: "mdi-sine-wave", text: "Analysis", route: "/analysis" },
+        { icon: "mdi-calendar", text: "Calendar", route: "/calendar" },
       ],
       loggedIn: false,
     };

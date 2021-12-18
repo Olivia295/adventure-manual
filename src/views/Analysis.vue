@@ -1,37 +1,66 @@
 <template>
-  <v-card class="mt-4 mx-auto" max-width="400">
-    <v-sheet
-      class="v-sheet--offset mx-auto"
-      color="cyan"
-      elevation="12"
-      max-width="calc(100% - 32px)"
-    >
-      <v-sparkline
-        :labels="Object.keys(dateData)"
-        :value="Object.values(dateData)"
-        color="white"
-        line-width="2"
-        padding="16"
-      ></v-sparkline>
-    </v-sheet>
+  <v-container>
 
-    <v-card-text class="pt-0">
-      <div class="text-h6 font-weight-light mb-2">
-        User Registrations
-      </div>
-      <div class="subheading font-weight-light grey--text">
-        Last Campaign Performance
-      </div>
-      <v-divider class="my-2"></v-divider>
-      <v-icon class="mr-2" small>
-        mdi-clock
-      </v-icon>
-      <span class="text-caption grey--text font-weight-light"
-        >last registration 26 minutes ago</span
+    <v-card class="my-8 mx-auto" max-width="400">
+      <v-sheet
+        class="v-sheet--offset mx-auto"
+        color="indigo100"
+        elevation="12"
+        max-width="calc(100% - 32px)"
       >
-    </v-card-text>
-    {{ getPast7Days() }}
-  </v-card>
+        <v-sparkline
+          :labels="Object.keys(missionsCreatedInADay)"
+          :value="Object.values(missionsCreatedInADay)"
+          color="indigo"
+          line-width="2"
+          padding="16"
+        ></v-sparkline>
+      </v-sheet>
+
+      <v-card-text class="pt-0">
+        <div class="text-h6 font-weight-light mb-2">
+          用户创建任务数
+        </div>
+        <div class="subheading font-weight-light grey--text">
+          截止至今天
+        </div>
+        <v-divider class="my-2"></v-divider>
+        <v-icon class="mr-2" small>
+          mdi-clock
+        </v-icon>
+      </v-card-text>
+    </v-card>
+    <v-card class="my-8 mx-auto" max-width="400">
+      <v-sheet
+        class="v-sheet--offset mx-auto"
+        color="indigo100"
+        elevation="12"
+        max-width="calc(100% - 32px)"
+      >
+        <v-sparkline
+          :labels="Object.keys(missionsFinishedInADay)"
+          :value="Object.values(missionsFinishedInADay)"
+          color="indigo"
+          line-width="2"
+          padding="16"
+        ></v-sparkline>
+      </v-sheet>
+
+      <v-card-text class="pt-0">
+        <div class="text-h6 font-weight-light mb-2">
+          用户完成任务数
+        </div>
+        <div class="subheading font-weight-light grey--text">
+          截止至今天
+        </div>
+        <v-divider class="my-2"></v-divider>
+        <v-icon class="mr-2" small>
+          mdi-clock
+        </v-icon>
+      </v-card-text>
+      <div></div>
+    </v-card>
+  </v-container>
 </template>
 <script>
 import firebase from "firebase/compat/app";
@@ -41,22 +70,13 @@ import db from "@/fb";
 export default {
   data() {
     return {
-      dateData: {
-        "12am": 100,
-        "3am": 200,
-        "6am": 200,
-        "9am": 200,
-        "12pm": 200,
-        "3pm": 200,
-        "6pm": 200,
-        "9pm": 200,
-      },
+      missionsCreatedInADay: {},
+      missionsFinishedInADay: {},
     };
   },
 
   mounted() {
     this.getMissions();
-    this.getMissionsDate();
     this.setupFirebase();
   },
   methods: {
@@ -71,40 +91,8 @@ export default {
       MM = MM < 10 ? "0" + MM : MM;
       let d = date.getDate();
       d = d < 10 ? "0" + d : d;
-      //   return y + "年 " + MM + "月" + d + "日 ";
       return MM + "-" + d;
     },
-    getMissionsDate() {
-      db.collection("missions").onSnapshot((res) => {
-        const changes = res.docChanges();
-        changes.forEach((change) => {
-          if (
-            change.type === "added" &&
-            change.doc.data().user.id == this.currentUserRef
-          ) {
-            console.log(
-              Date.parse(new Date()).substring(
-                0,
-                Date.parse(new Date()).length - 2
-              )
-            );
-            console.log(
-              this.timestampToTime(
-                Date.parse(new Date()).substring(
-                  0,
-                  Date.parse(new Date()).length - 2
-                )
-              )
-            );
-            console.log(change.doc.data().createdTimestamps);
-            console.log(
-              this.timestampToTime(change.doc.data().createdTimestamps)
-            );
-          }
-        });
-      });
-    },
-    getMissionCountDataToDate() {},
     setupFirebase() {
       firebase.auth().onAuthStateChanged((user) => {
         this.loggedIn = !!user;
@@ -129,33 +117,254 @@ export default {
         }
       });
     },
+    getTimestamp() {
+      return Math.round(new Date().getTime() / 1000).toString();
+    },
     //渲染任务列表
     getMissions() {
-      let missions = [];
       db.collection("missions").onSnapshot((res) => {
         const changes = res.docChanges();
+
         changes.forEach((change) => {
           if (
             change.type === "added" &&
             change.doc.data().user.id == this.currentUserRef
           ) {
-            missions.push({
-              ...change.doc.data(),
-              id: change.doc.id,
-            });
+            if (
+              Math.round(new Date().getTime() / 1000) - 604800 <
+              change.doc.data().createdTimestamps.seconds <
+              Math.round(new Date().getTime() / 1000) - 518400
+            ) {
+              if (
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] == undefined
+              ) {
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] = 0;
+              }
+              this.missionsCreatedInADay[
+                this.timestampToTime(change.doc.data().createdTimestamps)
+              ] += 1;
+            } else if (
+              change.doc.data().createdTimestamps.seconds <
+              Math.round(new Date().getTime() / 1000) - 432000
+            ) {
+              if (
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] == undefined
+              ) {
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] = 0;
+              }
+              this.missionsCreatedInADay[
+                this.timestampToTime(change.doc.data().createdTimestamps)
+              ] += 1;
+            } else if (
+              change.doc.data().createdTimestamps.seconds <
+              Math.round(new Date().getTime() / 1000) - 345600
+            ) {
+              if (
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] == undefined
+              ) {
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] = 0;
+              }
+              this.missionsCreatedInADay[
+                this.timestampToTime(change.doc.data().createdTimestamps)
+              ] += 1;
+            } else if (
+              change.doc.data().createdTimestamps.seconds <
+              Math.round(new Date().getTime() / 1000) - 259200
+            ) {
+              if (
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] == undefined
+              ) {
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] = 0;
+              }
+              this.missionsCreatedInADay[
+                this.timestampToTime(change.doc.data().createdTimestamps)
+              ] += 1;
+            } else if (
+              change.doc.data().createdTimestamps.seconds <
+              Math.round(new Date().getTime() / 1000) - 172800
+            ) {
+              if (
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] == undefined
+              ) {
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] = 0;
+              }
+              this.missionsCreatedInADay[
+                this.timestampToTime(change.doc.data().createdTimestamps)
+              ] += 1;
+            } else if (
+              change.doc.data().createdTimestamps.seconds <
+              Math.round(new Date().getTime() / 1000) - 86400
+            ) {
+              if (
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] == undefined
+              ) {
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] = 0;
+              }
+              this.missionsCreatedInADay[
+                this.timestampToTime(change.doc.data().createdTimestamps)
+              ] += 1;
+            } else if (
+              change.doc.data().createdTimestamps.seconds <
+              Math.round(new Date().getTime() / 1000)
+            ) {
+              if (
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] == undefined
+              ) {
+                this.missionsCreatedInADay[
+                  this.timestampToTime(change.doc.data().createdTimestamps)
+                ] = 0;
+              }
+              this.missionsCreatedInADay[
+                this.timestampToTime(change.doc.data().createdTimestamps)
+              ] += 1;
+            }
+            //finished
+
+            if (typeof change.doc.data().finishedTimestamps != "undefined") {
+              if (
+                Math.round(new Date().getTime() / 1000) - 604800 <
+                change.doc.data().finishedTimestamps.seconds <
+                Math.round(new Date().getTime() / 1000) - 518400
+              ) {
+                if (
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] == undefined
+                ) {
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] = 0;
+                }
+                this.missionsFinishedInADay[
+                  this.timestampToTime(change.doc.data().finishedTimestamps)
+                ] += 1;
+              } else if (
+                change.doc.data().finishedTimestamps.seconds <
+                Math.round(new Date().getTime() / 1000) - 432000
+              ) {
+                if (
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] == undefined
+                ) {
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] = 0;
+                }
+                this.missionsFinishedInADay[
+                  this.timestampToTime(change.doc.data().finishedTimestamps)
+                ] += 1;
+              } else if (
+                change.doc.data().finishedTimestamps.seconds <
+                Math.round(new Date().getTime() / 1000) - 345600
+              ) {
+                if (
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] == undefined
+                ) {
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] = 0;
+                }
+                this.missionsFinishedInADay[
+                  this.timestampToTime(change.doc.data().finishedTimestamps)
+                ] += 1;
+              } else if (
+                change.doc.data().finishedTimestamps.seconds <
+                Math.round(new Date().getTime() / 1000) - 259200
+              ) {
+                if (
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] == undefined
+                ) {
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] = 0;
+                }
+                this.missionsFinishedInADay[
+                  this.timestampToTime(change.doc.data().finishedTimestamps)
+                ] += 1;
+              } else if (
+                change.doc.data().finishedTimestamps.seconds <
+                Math.round(new Date().getTime() / 1000) - 172800
+              ) {
+                if (
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] == undefined
+                ) {
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] = 0;
+                }
+                this.missionsFinishedInADay[
+                  this.timestampToTime(change.doc.data().finishedTimestamps)
+                ] += 1;
+              } else if (
+                change.doc.data().finishedTimestamps.seconds <
+                Math.round(new Date().getTime() / 1000) - 86400
+              ) {
+                if (
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] == undefined
+                ) {
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] = 0;
+                }
+                this.missionsFinishedInADay[
+                  this.timestampToTime(change.doc.data().finishedTimestamps)
+                ] += 1;
+              } else if (
+                change.doc.data().finishedTimestamps.seconds <
+                Math.round(new Date().getTime() / 1000)
+              ) {
+                if (
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] == undefined
+                ) {
+                  this.missionsFinishedInADay[
+                    this.timestampToTime(change.doc.data().finishedTimestamps)
+                  ] = 0;
+                }
+                this.missionsFinishedInADay[
+                  this.timestampToTime(change.doc.data().finishedTimestamps)
+                ] += 1;
+              }
+            }
           }
         });
       });
-      this.missions = missions;
-    },
-    //时间戳转换为时间
-    formatTime(param) {
-      let y = param.getFullYear();
-      let m = param.getMonth() + 1;
-      let d = param.getDate();
-      m = m < 10 ? "0" + m : m;
-      d = d < 10 ? "0" + d : d;
-      return y + "-" + m + "-" + d + " ";
     },
   },
   created() {
@@ -172,7 +381,7 @@ export default {
         }
       });
     });
-    this.getMissions();
+    // this.getMissions();
   },
 };
 </script>

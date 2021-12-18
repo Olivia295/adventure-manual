@@ -4,7 +4,7 @@
       <v-col>
         <v-sheet height="64">
           <v-toolbar flat>
-            <v-btn color="primary" class="mr-4" @click="dialog = true" dark>
+            <v-btn color="indigo" class="mr-4" @click="dialog = true" dark>
               新任务
             </v-btn>
             <v-btn
@@ -95,7 +95,7 @@
                 ></v-text-field>
                 <v-btn
                   type="submit"
-                  color="primary"
+                  color="indigo"
                   class="mr-4"
                   @click.stop="dialog = false"
                   >创建任务</v-btn
@@ -109,7 +109,7 @@
           <v-calendar
             ref="calendar"
             v-model="focus"
-            color="primary"
+            color="indigo"
             :events="events"
             :event-color="getEventColor"
             :type="type"
@@ -134,6 +134,7 @@
                 <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
                 <v-spacer></v-spacer>
               </v-toolbar>
+
               <v-card-text>
                 <form v-if="currentlyEditing !== selectedEvent.id">
                   {{ selectedEvent.details }}
@@ -150,7 +151,7 @@
                 </form>
               </v-card-text>
               <v-card-actions>
-                <v-btn text color="secondary" @click="selectedOpen = false">
+                <v-btn text color="indigo" @click="selectedOpen = false">
                   关闭
                 </v-btn>
                 <v-btn
@@ -297,7 +298,6 @@ export default {
     },
     async addEvent() {
       if (this.name && this.start && this.end) {
-        console.log(this.currentUserRef);
         await db.collection("events").add({
           name: this.name,
           details: this.details,
@@ -319,7 +319,7 @@ export default {
 
     async updateEvent(ev) {
       await db
-        .collection("calEvent")
+        .collection("events")
         .doc(this.currentlyEditing)
         .update({
           details: ev.details,
@@ -327,6 +327,7 @@ export default {
       this.selectedOpen = false;
       this.currentlyEditing = null;
     },
+
     async deleteEvent(ev) {
       await db
         .collection("events")
