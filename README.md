@@ -1,24 +1,5 @@
 # adventure-manual
 
-## Project setup
-```
-npm install
-```
+a simple website-app for planning user life ,and help them to live a better live!
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Tech uses： Vue3 ,Vuetify, Google Firebase
